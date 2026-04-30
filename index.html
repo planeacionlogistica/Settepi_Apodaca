@@ -199,11 +199,23 @@ document.getElementById('uploadBtn').addEventListener('click', async ()=>{
 
     // 2. Sanitizar nombres de columnas
     const rawCols=Object.keys(rows[0]);
-    const cols=rawCols.map(c=>c.trim().toLowerCase()
-      .replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'_').replace(/_+/g,'_').replace(/^(\d)/,'c$1'));
+    const cols=rawCols.map(c=>c.trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')  // quitar acentos: ó→o, é→e, ñ→n
+      .toLowerCase()
+      .replace(/\s+/g,'_')
+      .replace(/[^a-z0-9_]/g,'_')
+      .replace(/_+/g,'_')
+      .replace(/_$/,'')
+      .replace(/^(\d)/,'c$1'));
     addLog(`Cols: ${cols.slice(0,5).join(', ')}${cols.length>5?' +'+( cols.length-5)+' más':''}`);
 
-    // 3. Insertar en batches
+    // 3. Recrear tabla (DROP + CREATE para que siempre coincida con el Excel)
+    setProgress(25,'Recreando tabla...');
+    addLog('Recreando tabla en Neon...');
+    await neonQuery(`DROP TABLE IF EXISTS ${tableName}`);
+    const colDefs=cols.map(c=>`"${c}" TEXT`).join(', ');
+    await neonQuery(`CREATE TABLE ${tableName} (${colDefs})`);
+    addLog(`Tabla "${tableName}" lista con ${cols.length} columnas`,'ok');
     setProgress(30,'Insertando datos...');
     const total=rows.length;
     let inserted=0;
