@@ -118,7 +118,7 @@
 </div>
 
 <script>
-const NEON_HOST  = 'ep-royal-dream-ambqsb0c-pooler.c-5.us-east-1.aws.neon.tech';
+const NEON_HOST  = 'ep-royal-dream-ambqsb0c.c-5.us-east-1.aws.neon.tech';
 const NEON_DB    = 'neondb';
 const NEON_USER  = 'neondb_owner';
 const NEON_PASS  = 'npg_ealfC5pOxMB0';
@@ -126,12 +126,12 @@ const NEON_URL   = `https://${NEON_HOST}/sql`;
 const BATCH_SIZE = 200;
 
 async function neonQuery(query, params=[]){
+  const connStr=`postgresql://${NEON_USER}:${NEON_PASS}@${NEON_HOST}/${NEON_DB}?sslmode=require`;
   const res = await fetch(NEON_URL, {
     method:'POST',
     headers:{
       'Content-Type':'application/json',
-      'Authorization':`Basic ${btoa(NEON_USER+':'+NEON_PASS)}`,
-      'Neon-Connection-String':`postgresql://${NEON_USER}:${NEON_PASS}@${NEON_HOST}/${NEON_DB}?sslmode=require`
+      'Neon-Connection-String': connStr
     },
     body: JSON.stringify({query, params})
   });
