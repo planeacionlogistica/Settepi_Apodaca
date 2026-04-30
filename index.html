@@ -130,7 +130,7 @@ async function neonQuery(query, params=[]){
     method:'POST',
     headers:{
       'Content-Type':'application/json',
-      'Authorization':`Bearer ${NEON_PASS}`,
+      'Authorization':`Basic ${btoa(NEON_USER+':'+NEON_PASS)}`,
       'Neon-Connection-String':`postgresql://${NEON_USER}:${NEON_PASS}@${NEON_HOST}/${NEON_DB}?sslmode=require`
     },
     body: JSON.stringify({query, params})
