@@ -3,75 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Uploader Garcia Data — Settepi</title>
+<title>Uploader NS Data — Settepi</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
   :root{
-    --bg:#0f1117; --surface:#1a1d27; --border:#2a2d3a;
-    --green:#4ade80; --green-dim:#166534; --red:#f87171;
-    --yellow:#fbbf24; --text:#e2e8f0; --muted:#64748b;
-    --accent:#4ade80;
+    --bg:#f8fafc; --surface:#ffffff; --border:#e2e8f0;
+    --green:#16a34a; --green-dim:#bbf7d0; --red:#dc2626;
+    --yellow:#d97706; --text:#1e293b; --muted:#94a3b8;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
-
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2.5rem;width:100%;max-width:560px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2.5rem;width:100%;max-width:560px;box-shadow:0 4px 24px rgba(0,0,0,.08);}
   .logo{display:flex;align-items:center;gap:.75rem;margin-bottom:2rem;}
-  .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);}
+  .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--green);}
   .logo-text{font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
-
   h1{font-size:1.4rem;font-weight:700;margin-bottom:.4rem;}
   .subtitle{color:var(--muted);font-size:.875rem;margin-bottom:2rem;}
-
-  /* Drop zone */
-  .dropzone{
-    border:2px dashed var(--border);border-radius:10px;
-    padding:3rem 2rem;text-align:center;cursor:pointer;
-    transition:all .2s;position:relative;
-  }
+  .dropzone{border:2px dashed var(--border);border-radius:10px;padding:3rem 2rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
   .dropzone:hover,.dropzone.drag{border-color:var(--green);background:rgba(74,222,128,.04);}
   .dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
   .dz-icon{font-size:2.5rem;margin-bottom:.75rem;}
   .dz-label{font-size:.95rem;font-weight:600;margin-bottom:.3rem;}
   .dz-sub{font-size:.8rem;color:var(--muted);}
-
-  /* File info */
   .file-info{display:none;align-items:center;gap:1rem;padding:1rem;background:rgba(74,222,128,.07);border:1px solid var(--green-dim);border-radius:8px;margin-top:1rem;}
   .file-info.show{display:flex;}
   .file-icon{font-size:1.8rem;}
   .file-name{font-weight:600;font-size:.9rem;word-break:break-all;}
   .file-meta{font-size:.78rem;color:var(--muted);margin-top:.2rem;}
-
-  /* Config */
   .config{margin-top:1.5rem;}
   .config label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em;}
-  .config select,.config input[type=text]{
-    width:100%;background:var(--bg);border:1px solid var(--border);
-    color:var(--text);padding:.6rem .8rem;border-radius:7px;font-size:.875rem;
-    font-family:inherit;outline:none;transition:border .2s;
-  }
-  .config select:focus,.config input:focus{border-color:var(--green);}
   .config-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-
-  /* Button */
-  .btn{
-    width:100%;padding:.85rem;border-radius:8px;border:none;cursor:pointer;
-    font-size:.95rem;font-weight:700;font-family:inherit;
-    background:var(--green);color:#0f1117;transition:all .2s;margin-top:1.5rem;
-    display:flex;align-items:center;justify-content:center;gap:.5rem;
-  }
-  .btn:hover:not(:disabled){background:#86efac;transform:translateY(-1px);}
+  .config select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem .8rem;border-radius:7px;font-size:.875rem;font-family:inherit;outline:none;transition:border .2s;}
+  .config select:focus{border-color:var(--green);}
+  .btn{width:100%;padding:.85rem;border-radius:8px;border:none;cursor:pointer;font-size:.95rem;font-weight:700;font-family:inherit;background:var(--green);color:#ffffff;transition:all .2s;margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem;}
+  .btn:hover:not(:disabled){background:#15803d;transform:translateY(-1px);}
   .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
-
-  /* Progress */
   .progress-wrap{margin-top:1.5rem;display:none;}
   .progress-wrap.show{display:block;}
   .progress-bar-bg{background:var(--border);border-radius:99px;height:6px;overflow:hidden;}
   .progress-bar{height:100%;background:var(--green);border-radius:99px;transition:width .3s;width:0%;}
   .progress-label{font-size:.8rem;color:var(--muted);margin-top:.5rem;font-family:'IBM Plex Mono',monospace;}
-
-  /* Log */
   .log{margin-top:1.5rem;max-height:180px;overflow-y:auto;display:none;}
   .log.show{display:block;}
   .log-line{font-family:'IBM Plex Mono',monospace;font-size:.75rem;padding:.25rem 0;border-bottom:1px solid var(--border);display:flex;gap:.75rem;}
@@ -80,8 +52,6 @@
   .log-line.ok .msg{color:var(--green);}
   .log-line.err .msg{color:var(--red);}
   .log-line.warn .msg{color:var(--yellow);}
-
-  /* Success */
   .success-banner{display:none;margin-top:1.5rem;padding:1.2rem;background:rgba(74,222,128,.1);border:1px solid var(--green-dim);border-radius:8px;text-align:center;}
   .success-banner.show{display:block;}
   .success-banner .s-icon{font-size:2rem;margin-bottom:.5rem;}
@@ -93,10 +63,10 @@
 <div class="card">
   <div class="logo">
     <div class="logo-dot"></div>
-    <span class="logo-text">Settepi · Garcia Data · Neon DB</span>
+    <span class="logo-text">Settepi · NS Data · Neon DB</span>
   </div>
-  <h1>Actualizar datos</h1>
-  <p class="subtitle">Arrastra el Excel descargado del sistema. Se borra la información anterior y se carga la nueva automáticamente.</p>
+  <h1>Actualizar datos NS</h1>
+  <p class="subtitle">Arrastra el Excel descargado del sistema para cargarlo a Neon.</p>
 
   <div class="dropzone" id="dz">
     <input type="file" id="fileInput" accept=".xlsx,.xls">
@@ -121,7 +91,9 @@
       </div>
       <div>
         <label>Tabla en Neon</label>
-        <input type="text" id="tableName" value="garcia_data" placeholder="garcia_data">
+        <select id="tableName">
+          <option value="ns_data">ns_data</option>
+        </select>
       </div>
     </div>
   </div>
@@ -146,12 +118,11 @@
 </div>
 
 <script>
-// ── Neon config ───────────────────────────────────────────────────
-const NEON_HOST = 'ep-royal-dream-ambqsb0c-pooler.c-5.us-east-1.aws.neon.tech';
-const NEON_DB   = 'neondb';
-const NEON_USER = 'neondb_owner';
-const NEON_PASS = 'npg_ealfC5pOxMB0';
-const NEON_URL  = `https://${NEON_HOST}/sql`;
+const NEON_HOST  = 'ep-royal-dream-ambqsb0c-pooler.c-5.us-east-1.aws.neon.tech';
+const NEON_DB    = 'neondb';
+const NEON_USER  = 'neondb_owner';
+const NEON_PASS  = 'npg_ealfC5pOxMB0';
+const NEON_URL   = `https://${NEON_HOST}/sql`;
 const BATCH_SIZE = 200;
 
 async function neonQuery(query, params=[]){
@@ -159,116 +130,93 @@ async function neonQuery(query, params=[]){
     method:'POST',
     headers:{
       'Content-Type':'application/json',
-      'Authorization': `Bearer ${NEON_PASS}`,
-      'Neon-Connection-String': `postgresql://${NEON_USER}:${NEON_PASS}@${NEON_HOST}/${NEON_DB}?sslmode=require`
+      'Authorization':`Bearer ${NEON_PASS}`,
+      'Neon-Connection-String':`postgresql://${NEON_USER}:${NEON_PASS}@${NEON_HOST}/${NEON_DB}?sslmode=require`
     },
     body: JSON.stringify({query, params})
   });
-  if(!res.ok){
-    const txt = await res.text();
-    throw new Error(`Neon error ${res.status}: ${txt}`);
-  }
+  if(!res.ok){ const t=await res.text(); throw new Error(`Neon ${res.status}: ${t}`); }
   return await res.json();
 }
 
-// ── UI helpers ────────────────────────────────────────────────────
 function addLog(msg, type='info'){
-  const box = document.getElementById('logBox');
+  const box=document.getElementById('logBox');
   box.classList.add('show');
-  const now = new Date();
-  const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-  const line = document.createElement('div');
-  line.className = `log-line ${type}`;
-  line.innerHTML = `<span class="ts">${ts}</span><span class="msg">${msg}</span>`;
+  const now=new Date();
+  const ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const line=document.createElement('div');
+  line.className=`log-line ${type}`;
+  line.innerHTML=`<span class="ts">${ts}</span><span class="msg">${msg}</span>`;
   box.prepend(line);
 }
 function setProgress(pct, label){
-  document.getElementById('progressBar').style.width = pct+'%';
-  document.getElementById('progressLabel').textContent = label;
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=label;
 }
 
-// ── Drop zone ─────────────────────────────────────────────────────
-let selectedFile = null;
-const dz = document.getElementById('dz');
-const fileInput = document.getElementById('fileInput');
-
-dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('drag'); });
-dz.addEventListener('dragleave', ()=> dz.classList.remove('drag'));
-dz.addEventListener('drop', e=>{
-  e.preventDefault(); dz.classList.remove('drag');
-  const f = e.dataTransfer.files[0];
-  if(f) handleFile(f);
-});
-fileInput.addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+let selectedFile=null;
+const dz=document.getElementById('dz');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
+document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
 
 function handleFile(file){
-  selectedFile = file;
+  selectedFile=file;
   document.getElementById('fileInfo').classList.add('show');
-  document.getElementById('fileName').textContent = file.name;
-  document.getElementById('fileMeta').textContent = `${(file.size/1024/1024).toFixed(2)} MB · ${new Date(file.lastModified).toLocaleDateString('es-MX')}`;
-  document.getElementById('uploadBtn').disabled = false;
-  document.getElementById('btnText').textContent = 'Subir a Neon → Reemplazar datos';
+  document.getElementById('fileName').textContent=file.name;
+  document.getElementById('fileMeta').textContent=`${(file.size/1024/1024).toFixed(2)} MB · ${new Date(file.lastModified).toLocaleDateString('es-MX')}`;
+  document.getElementById('uploadBtn').disabled=false;
+  document.getElementById('btnText').textContent='Subir a Neon → Reemplazar datos';
   document.getElementById('successBanner').classList.remove('show');
-  document.getElementById('logBox').innerHTML = '';
+  document.getElementById('logBox').innerHTML='';
   document.getElementById('logBox').classList.remove('show');
 }
 
-// ── Main upload ───────────────────────────────────────────────────
 document.getElementById('uploadBtn').addEventListener('click', async ()=>{
   if(!selectedFile) return;
-  const sheetName = document.getElementById('sheetName').value.trim() || 'NS';
-  const tableName = document.getElementById('tableName').value.trim() || 'garcia_data';
-
-  const btn = document.getElementById('uploadBtn');
-  btn.disabled = true;
-  document.getElementById('btnIcon').textContent = '⏳';
-  document.getElementById('btnText').textContent = 'Subiendo...';
+  const sheetName=document.getElementById('sheetName').value.trim()||'NS';
+  const tableName=document.getElementById('tableName').value||'ns_data';
+  const btn=document.getElementById('uploadBtn');
+  btn.disabled=true;
+  document.getElementById('btnIcon').textContent='⏳';
+  document.getElementById('btnText').textContent='Subiendo...';
   document.getElementById('progressWrap').classList.add('show');
   document.getElementById('successBanner').classList.remove('show');
 
   try{
     // 1. Leer Excel
-    addLog(`Leyendo archivo: ${selectedFile.name}`);
-    setProgress(5, 'Leyendo Excel...');
-    const buffer = await selectedFile.arrayBuffer();
-    const wb = XLSX.read(new Uint8Array(buffer), {type:'array', cellDates:true, dateNF:'YYYY-MM-DD'});
-
-    const ws = wb.Sheets[sheetName];
-    if(!ws) throw new Error(`No se encontró la hoja "${sheetName}". Hojas disponibles: ${wb.SheetNames.join(', ')}`);
-
-    const rows = XLSX.utils.sheet_to_json(ws, {defval:'', raw:false});
+    addLog(`Leyendo: ${selectedFile.name}`);
+    setProgress(5,'Leyendo Excel...');
+    const buffer=await selectedFile.arrayBuffer();
+    const wb=XLSX.read(new Uint8Array(buffer),{type:'array',cellDates:true,dateNF:'YYYY-MM-DD'});
+    const ws=wb.Sheets[sheetName];
+    if(!ws) throw new Error(`No se encontró la hoja "${sheetName}". Hojas: ${wb.SheetNames.join(', ')}`);
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
     if(!rows.length) throw new Error(`La hoja "${sheetName}" está vacía.`);
-    addLog(`${rows.length.toLocaleString()} filas leídas, ${Object.keys(rows[0]).length} columnas`, 'ok');
-    setProgress(15, `${rows.length.toLocaleString()} filas encontradas...`);
+    addLog(`${rows.length.toLocaleString()} filas · ${Object.keys(rows[0]).length} columnas`,'ok');
+    setProgress(15,`${rows.length.toLocaleString()} filas encontradas...`);
 
-    // 2. Limpiar nombres de columnas
-    const rawCols = Object.keys(rows[0]);
-    const cols = rawCols.map(c => c.trim().toLowerCase()
+    // 2. Sanitizar nombres de columnas
+    const rawCols=Object.keys(rows[0]);
+    const cols=rawCols.map(c=>c.trim().toLowerCase()
       .replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'_').replace(/^(\d)/,'c$1'));
-    const colMap = Object.fromEntries(rawCols.map((c,i)=>[c, cols[i]]));
-    addLog(`Columnas: ${cols.slice(0,5).join(', ')}${cols.length>5?' ...+'+( cols.length-5)+' más':''}`);
+    addLog(`Cols: ${cols.slice(0,5).join(', ')}${cols.length>5?' +'+( cols.length-5)+' más':''}`);
 
-    // 3. Crear tabla en Neon (DROP + CREATE)
-    setProgress(25, 'Creando tabla en Neon...');
-    addLog('Borrando datos anteriores...');
-    await neonQuery(`DROP TABLE IF EXISTS ${tableName}`);
-    const colDefs = cols.map(c=>`"${c}" TEXT`).join(', ');
-    await neonQuery(`CREATE TABLE ${tableName} (id SERIAL PRIMARY KEY, ${colDefs})`);
-    addLog(`Tabla "${tableName}" creada con ${cols.length} columnas`, 'ok');
+    // 3. Insertar en batches
+    setProgress(30,'Insertando datos...');
+    const total=rows.length;
+    let inserted=0;
 
-    // 4. Insertar en batches
-    setProgress(30, 'Insertando datos...');
-    const total = rows.length;
-    let inserted = 0;
-
-    for(let i=0; i<total; i+=BATCH_SIZE){
-      const batch = rows.slice(i, i+BATCH_SIZE);
-      const placeholders = batch.map((_, ri)=>{
-        const offset = ri * cols.length;
+    for(let i=0;i<total;i+=BATCH_SIZE){
+      const batch=rows.slice(i,i+BATCH_SIZE);
+      const colNames=cols.map(c=>`"${c}"`).join(',');
+      const placeholders=batch.map((_,ri)=>{
+        const offset=ri*cols.length;
         return '('+cols.map((_,ci)=>`$${offset+ci+1}`).join(',')+')'
       }).join(',');
-      const values = batch.flatMap(row => rawCols.map(rc=>{
-        const v = row[rc];
+      const values=batch.flatMap(row=>rawCols.map(rc=>{
+        const v=row[rc];
         if(v===null||v===undefined||v==='') return null;
         if(v instanceof Date){
           const pad=n=>String(n).padStart(2,'0');
@@ -276,30 +224,27 @@ document.getElementById('uploadBtn').addEventListener('click', async ()=>{
         }
         return String(v);
       }));
-      const colNames = cols.map(c=>`"${c}"`).join(',');
-      await neonQuery(`INSERT INTO ${tableName} (${colNames}) VALUES ${placeholders}`, values);
-      inserted += batch.length;
-      const pct = 30 + Math.round((inserted/total)*65);
-      setProgress(pct, `Insertando: ${inserted.toLocaleString()} / ${total.toLocaleString()} filas...`);
+      await neonQuery(`INSERT INTO ${tableName} (${colNames}) VALUES ${placeholders}`,values);
+      inserted+=batch.length;
+      const pct=30+Math.round((inserted/total)*68);
+      setProgress(pct,`Insertando: ${inserted.toLocaleString()} / ${total.toLocaleString()} filas...`);
     }
 
-    setProgress(100, '¡Listo!');
-    addLog(`✅ ${inserted.toLocaleString()} filas insertadas correctamente`, 'ok');
-
-    // 5. Mostrar éxito
+    setProgress(100,'¡Listo!');
+    addLog(`✅ ${inserted.toLocaleString()} filas insertadas`,'ok');
     document.getElementById('successBanner').classList.add('show');
-    document.getElementById('successSub').textContent =
-      `${inserted.toLocaleString()} filas cargadas en "${tableName}" · ${new Date().toLocaleString('es-MX')}`;
-    document.getElementById('btnIcon').textContent = '✅';
-    document.getElementById('btnText').textContent = 'Subir otro archivo';
-    btn.disabled = false;
+    document.getElementById('successSub').textContent=
+      `${inserted.toLocaleString()} filas en "${tableName}" · ${new Date().toLocaleString('es-MX')}`;
+    document.getElementById('btnIcon').textContent='✅';
+    document.getElementById('btnText').textContent='Subir otro archivo';
+    btn.disabled=false;
 
   }catch(e){
-    addLog(`ERROR: ${e.message}`, 'err');
-    setProgress(0, 'Error — revisa el log');
-    document.getElementById('btnIcon').textContent = '⬆️';
-    document.getElementById('btnText').textContent = 'Reintentar';
-    btn.disabled = false;
+    addLog(`ERROR: ${e.message}`,'err');
+    setProgress(0,'Error — revisa el log');
+    document.getElementById('btnIcon').textContent='⬆️';
+    document.getElementById('btnText').textContent='Reintentar';
+    btn.disabled=false;
     console.error(e);
   }
 });
