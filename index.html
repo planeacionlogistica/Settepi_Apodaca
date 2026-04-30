@@ -200,7 +200,7 @@ document.getElementById('uploadBtn').addEventListener('click', async ()=>{
     // 2. Sanitizar nombres de columnas
     const rawCols=Object.keys(rows[0]);
     const cols=rawCols.map(c=>c.trim().toLowerCase()
-      .replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'_').replace(/^(\d)/,'c$1'));
+      .replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'_').replace(/_+/g,'_').replace(/^(\d)/,'c$1'));
     addLog(`Cols: ${cols.slice(0,5).join(', ')}${cols.length>5?' +'+( cols.length-5)+' más':''}`);
 
     // 3. Insertar en batches
