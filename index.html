@@ -209,13 +209,36 @@ document.getElementById('uploadBtn').addEventListener('click', async ()=>{
       .replace(/^(\d)/,'c$1'));
     addLog(`Cols: ${cols.slice(0,5).join(', ')}${cols.length>5?' +'+( cols.length-5)+' más':''}`);
 
-    // 3. Recrear tabla (DROP + CREATE para que siempre coincida con el Excel)
-    setProgress(25,'Recreando tabla...');
-    addLog('Recreando tabla en Neon...');
-    await neonQuery(`DROP TABLE IF EXISTS ${tableName}`);
+    // 3. Detectar columna de fecha y fechas únicas del Excel
+    const dateColRaw = rawCols.find(c => c.trim().toLowerCase() === 'start_date')
+                    || rawCols.find(c => c.trim().toLowerCase().includes('start_date'));
+    const dateColSan = dateColRaw ? cols[rawCols.indexOf(dateColRaw)] : null;
+
+    const uniqueDates = [...new Set(rows.map(r => {
+      const v = r[dateColRaw];
+      if(!v) return null;
+      if(v instanceof Date){
+        const pad=n=>String(n).padStart(2,'0');
+        return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`;
+      }
+      return String(v).slice(0,10);
+    }).filter(Boolean))];
+
+    // 4. Crear tabla si no existe (primera vez)
+    setProgress(22,'Verificando tabla...');
     const colDefs=cols.map(c=>`"${c}" TEXT`).join(', ');
-    await neonQuery(`CREATE TABLE ${tableName} (${colDefs})`);
-    addLog(`Tabla "${tableName}" lista con ${cols.length} columnas`,'ok');
+    await neonQuery(`CREATE TABLE IF NOT EXISTS ${tableName} (${colDefs})`);
+
+    // 5. Borrar solo las fechas que trae el Excel
+    if(uniqueDates.length && dateColSan){
+      setProgress(26,'Borrando fechas existentes...');
+      const placeholders=uniqueDates.map((_,i)=>`$${i+1}`).join(',');
+      await neonQuery(`DELETE FROM ${tableName} WHERE "${dateColSan}" IN (${placeholders})`, uniqueDates);
+      addLog(`Fechas borradas: ${uniqueDates.join(', ')}`,'warn');
+    } else {
+      addLog('No se detectó columna start_date — se inserta sin borrar','warn');
+    }
+
     setProgress(30,'Insertando datos...');
     const total=rows.length;
     let inserted=0;
