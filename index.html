@@ -144,7 +144,13 @@
     <ul>
       <li><strong>Hoja VF</strong> — datos crudos del sistema. Columnas mínimas: <code>car</code>, <code>group</code> (cliente), <code>des</code> (ruta), <code>start_date</code>, <code>operador</code>, <code>worker_id</code>.</li>
       <li><strong>Hoja Flota</strong> — carros activos. Columna: <code>IDS</code> (lista de IDs de vehículos vigentes). Opcional pero recomendado: filtra carros dados de baja.</li>
-      <li><strong>Hoja Inputs</strong> — mapeo de coordinadores. Columnas: <code>ClienteCoor</code> (ej. <code>CON-CONMET-F1</code>), <code>Coordinador</code>, <code>Jefe</code> (opcional).</li>
+      <li><strong>Hoja Inputs</strong> — dos tablas paralelas independientes:
+        <ul>
+          <li>Cols A-F: <code>CLIENTE</code> + <code>Jefe</code> + <code>Gerente</code> (+ Cantidad de carros, UDN, Horas perm.)</li>
+          <li>Cols H-I: <code>CLIENTE COOR</code> (ej. <code>CON-CONMET-F1</code>) + <code>COORDINADOR</code></li>
+        </ul>
+        Las filas no se corresponden — cada tabla se procesa por separado.
+      </li>
     </ul>
   </details>
 </div>
@@ -188,7 +194,8 @@ function setProgress(pct, label){
 let DATA = [];
 let FLOTA_MAP = {};
 let COORD_RAW = [];
-let JEFE_BY_COORD = {};
+let JEFE_BY_CLIENTE = {};
+let GERENTE_BY_CLIENTE = {};
 let selectedFile = null;
 let dataReady = false;
 
@@ -278,42 +285,53 @@ async function prepareData(){
       addLog('Sin hoja Flota — no se filtran carros activos.','warn');
     }
 
-    // ── Cargar Inputs ──
-    COORD_RAW=[]; JEFE_BY_COORD={};
+    // ── Cargar Inputs (DOS tablas paralelas independientes) ──
+    // Tabla 1 (cols A-F): CLIENTE → Jefe → Gerente → ...
+    // Tabla 2 (cols H-I): CLIENTE COOR → COORDINADOR
+    // Las filas NO se corresponden: cada tabla se procesa por separado.
+    COORD_RAW=[]; JEFE_BY_CLIENTE={}; GERENTE_BY_CLIENTE={};
     if(inputsSheet){
       const ir=XLSX.utils.sheet_to_json(wb.Sheets[inputsSheet],{defval:''});
       ir.forEach(r=>{
         const keys=Object.keys(r);
+        // ── Tabla 1: cliente → jefe / gerente ──
+        const cliKey=keys.find(k=>k.trim().toUpperCase()==='CLIENTE');
+        const jeKey =keys.find(k=>k.trim().toUpperCase()==='JEFE');
+        const gerKey=keys.find(k=>k.trim().toUpperCase()==='GERENTE');
+        if(cliKey){
+          const cli=String(r[cliKey]||'').trim();
+          if(cli){
+            if(jeKey){ const je=String(r[jeKey]||'').trim();  if(je) JEFE_BY_CLIENTE[cli]=je; }
+            if(gerKey){ const ge=String(r[gerKey]||'').trim(); if(ge) GERENTE_BY_CLIENTE[cli]=ge; }
+          }
+        }
+        // ── Tabla 2: cliente_coor → coordinador (independiente de la tabla 1) ──
         const ccKey=keys.find(k=>k.trim().toUpperCase().replace(/\s+/g,'').includes('CLIENTECOOR'));
         const coKey=keys.find(k=>k.trim().toUpperCase()==='COORDINADOR');
-        const jeKey=keys.find(k=>k.trim().toUpperCase()==='JEFE');
         if(ccKey&&coKey){
           const cc=String(r[ccKey]||'').trim();
           const co=String(r[coKey]||'').trim();
           if(cc&&co) COORD_RAW.push({cc,co});
         }
-        if(coKey&&jeKey){
-          const co=String(r[coKey]||'').trim();
-          const je=String(r[jeKey]||'').trim();
-          if(co&&je && !JEFE_BY_COORD[co]) JEFE_BY_COORD[co]=je;
-        }
       });
-      const jefeCount=Object.keys(JEFE_BY_COORD).length;
-      addLog(`Inputs: ${COORD_RAW.length} reglas de coordinador${jefeCount?' · '+jefeCount+' coord→jefe':''}`,'ok');
+      addLog(`Inputs: ${COORD_RAW.length} reglas de coord · ${Object.keys(JEFE_BY_CLIENTE).length} jefes · ${Object.keys(GERENTE_BY_CLIENTE).length} gerentes`,'ok');
     } else {
-      addLog('Sin hoja Inputs — coordinador y jefe quedarán vacíos.','warn');
+      addLog('Sin hoja Inputs — coordinador, jefe y gerente quedarán vacíos.','warn');
     }
 
     // ── Aplicar buildCoordMap ──
     buildCoordMap();
-    // ── Asignar Jefe por coordinador ──
-    if(Object.keys(JEFE_BY_COORD).length){
-      let asignados=0;
+
+    // ── Asignar Jefe y Gerente por CLIENTE directo (group) ──
+    if(Object.keys(JEFE_BY_CLIENTE).length){
+      let jefAsig=0, gerAsig=0;
       DATA.forEach(r=>{
-        const co=(r['Coordinador']||'').trim();
-        if(co && JEFE_BY_COORD[co]){ r['Jefe']=JEFE_BY_COORD[co]; asignados++; }
+        const cli=String(r['group']||'').trim();
+        if(!cli) return;
+        if(JEFE_BY_CLIENTE[cli]){    r['Jefe']=JEFE_BY_CLIENTE[cli];       jefAsig++; }
+        if(GERENTE_BY_CLIENTE[cli]){ r['Gerente']=GERENTE_BY_CLIENTE[cli]; gerAsig++; }
       });
-      addLog(`Jefe asignado a ${asignados.toLocaleString()} filas vía coord→jefe`,'ok');
+      addLog(`Jefe asignado a ${jefAsig.toLocaleString()} filas · Gerente a ${gerAsig.toLocaleString()}`,'ok');
     }
 
     // ── Poblar filtros (mes y cliente) ──
@@ -477,8 +495,8 @@ document.getElementById('generateBtn').addEventListener('click', ()=>{
         if(filters.ff && d > filters.ff) return false;
       }
       if(filters.cliente && String(r['group']||'').trim()!==filters.cliente) return false;
-      // Excluir filas sin jefe válido SOLO si tenemos mapeo de jefes (si no, no hay nada que validar)
-      if(Object.keys(JEFE_BY_COORD).length){
+      // Excluir filas sin jefe válido SOLO si tenemos mapeo de jefes
+      if(Object.keys(JEFE_BY_CLIENTE).length){
         const jefe=String(r['Jefe']||'').trim();
         if(!jefe || jefe==='#N/A' || jefe==='#REF!' || jefe.startsWith('#')) return false;
       }
