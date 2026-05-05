@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Uploader NS Data — Settepi</title>
+<title>Catálogo de Unidades — Settepi</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
@@ -14,7 +14,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2.5rem;width:100%;max-width:560px;box-shadow:0 4px 24px rgba(0,0,0,.08);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2.5rem;width:100%;max-width:620px;box-shadow:0 4px 24px rgba(0,0,0,.08);}
   .logo{display:flex;align-items:center;gap:.75rem;margin-bottom:2rem;}
   .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--green);}
   .logo-text{font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
@@ -31,11 +31,19 @@
   .file-icon{font-size:1.8rem;}
   .file-name{font-weight:600;font-size:.9rem;word-break:break-all;}
   .file-meta{font-size:.78rem;color:var(--muted);margin-top:.2rem;}
-  .config{margin-top:1.5rem;}
-  .config label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em;}
+  .sheets-detected{display:none;margin-top:1rem;padding:.85rem 1rem;background:#f1f5f9;border:1px solid var(--border);border-radius:8px;}
+  .sheets-detected.show{display:block;}
+  .sheet-item{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;padding:.25rem 0;font-family:'IBM Plex Mono',monospace;}
+  .sheet-item .ok{color:var(--green);font-weight:600;}
+  .sheet-item .miss{color:var(--red);font-weight:600;}
+  .sheet-item .opt{color:var(--yellow);font-weight:600;}
+  .config{margin-top:1.5rem;display:none;}
+  .config.show{display:block;}
+  .config label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em;}
   .config-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-  .config select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem .8rem;border-radius:7px;font-size:.875rem;font-family:inherit;outline:none;transition:border .2s;}
-  .config select:focus{border-color:var(--green);}
+  .config select,.config input[type=date],.config input[type=text]{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem .8rem;border-radius:7px;font-size:.875rem;font-family:inherit;outline:none;transition:border .2s;}
+  .config select:focus,.config input:focus{border-color:var(--green);}
+  .filter-hint{font-size:.7rem;color:var(--muted);margin-top:-.5rem;margin-bottom:1rem;font-style:italic;}
   .btn{width:100%;padding:.85rem;border-radius:8px;border:none;cursor:pointer;font-size:.95rem;font-weight:700;font-family:inherit;background:var(--green);color:#ffffff;transition:all .2s;margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem;}
   .btn:hover:not(:disabled){background:#15803d;transform:translateY(-1px);}
   .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
@@ -44,9 +52,9 @@
   .progress-bar-bg{background:var(--border);border-radius:99px;height:6px;overflow:hidden;}
   .progress-bar{height:100%;background:var(--green);border-radius:99px;transition:width .3s;width:0%;}
   .progress-label{font-size:.8rem;color:var(--muted);margin-top:.5rem;font-family:'IBM Plex Mono',monospace;}
-  .log{margin-top:1.5rem;max-height:180px;overflow-y:auto;display:none;}
+  .log{margin-top:1.5rem;max-height:200px;overflow-y:auto;display:none;}
   .log.show{display:block;}
-  .log-line{font-family:'IBM Plex Mono',monospace;font-size:.75rem;padding:.25rem 0;border-bottom:1px solid var(--border);display:flex;gap:.75rem;}
+  .log-line{font-family:'IBM Plex Mono',monospace;font-size:.75rem;padding:.3rem 0;border-bottom:1px solid var(--border);display:flex;gap:.75rem;}
   .log-line:last-child{border:none;}
   .log-line .ts{color:var(--muted);flex-shrink:0;}
   .log-line.ok .msg{color:var(--green);}
@@ -57,16 +65,20 @@
   .success-banner .s-icon{font-size:2rem;margin-bottom:.5rem;}
   .success-banner .s-title{font-weight:700;color:var(--green);margin-bottom:.25rem;}
   .success-banner .s-sub{font-size:.82rem;color:var(--muted);}
+  details.spec{margin-top:1.5rem;font-size:.78rem;color:var(--muted);}
+  details.spec summary{cursor:pointer;font-weight:600;padding:.4rem 0;}
+  details.spec code{background:#f1f5f9;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text);}
+  details.spec ul{margin-left:1.2rem;margin-top:.4rem;line-height:1.6;}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="logo">
     <div class="logo-dot"></div>
-    <span class="logo-text">Settepi · NS Data · Neon DB</span>
+    <span class="logo-text">Settepi · Catálogo de Unidades</span>
   </div>
-  <h1>Actualizar datos NS</h1>
-  <p class="subtitle">Arrastra el Excel descargado del sistema para cargarlo a Neon.</p>
+  <h1>Generador de catálogo</h1>
+  <p class="subtitle">Sube el Excel con hojas <strong>VF</strong>, <strong>Flota</strong> e <strong>Inputs</strong> para generar el catálogo de unidades por coordinador.</p>
 
   <div class="dropzone" id="dz">
     <input type="file" id="fileInput" accept=".xlsx,.xls">
@@ -83,23 +95,34 @@
     </div>
   </div>
 
-  <div class="config">
+  <div class="sheets-detected" id="sheetsDetected"></div>
+
+  <div class="config" id="filterConfig">
     <div class="config-row">
       <div>
-        <label>Hoja del Excel</label>
-        <input type="text" id="sheetName" value="NS" placeholder="NS">
+        <label>Mes (opcional)</label>
+        <select id="filterMes"><option value="">— Todos los meses —</option></select>
       </div>
       <div>
-        <label>Tabla en Neon</label>
-        <select id="tableName">
-          <option value="ns_data">ns_data</option>
-        </select>
+        <label>Cliente (opcional)</label>
+        <select id="filterCliente"><option value="">— Todos —</option></select>
       </div>
     </div>
+    <div class="config-row">
+      <div>
+        <label>Fecha inicio</label>
+        <input type="date" id="filterFi">
+      </div>
+      <div>
+        <label>Fecha fin</label>
+        <input type="date" id="filterFf">
+      </div>
+    </div>
+    <div class="filter-hint">Si seleccionas Mes, las fechas se ignoran. Sin filtros = todo el archivo.</div>
   </div>
 
-  <button class="btn" id="uploadBtn" disabled>
-    <span id="btnIcon">⬆️</span>
+  <button class="btn" id="generateBtn" disabled>
+    <span id="btnIcon">📥</span>
     <span id="btnText">Selecciona un archivo primero</span>
   </button>
 
@@ -112,41 +135,48 @@
 
   <div class="success-banner" id="successBanner">
     <div class="s-icon">✅</div>
-    <div class="s-title">¡Datos actualizados!</div>
+    <div class="s-title">¡Catálogo generado!</div>
     <div class="s-sub" id="successSub">—</div>
   </div>
+
+  <details class="spec">
+    <summary>📋 Estructura esperada del Excel</summary>
+    <ul>
+      <li><strong>Hoja VF</strong> — datos crudos del sistema. Columnas mínimas: <code>car</code>, <code>group</code> (cliente), <code>des</code> (ruta), <code>start_date</code>, <code>operador</code>, <code>worker_id</code>.</li>
+      <li><strong>Hoja Flota</strong> — carros activos. Columna: <code>IDS</code> (lista de IDs de vehículos vigentes). Opcional pero recomendado: filtra carros dados de baja.</li>
+      <li><strong>Hoja Inputs</strong> — mapeo de coordinadores. Columnas: <code>ClienteCoor</code> (ej. <code>CON-CONMET-F1</code>), <code>Coordinador</code>, <code>Jefe</code> (opcional).</li>
+    </ul>
+  </details>
 </div>
 
 <script>
-const NEON_HOST  = 'ep-royal-dream-ambqsb0c.c-5.us-east-1.aws.neon.tech';
-const NEON_DB    = 'neondb';
-const NEON_USER  = 'neondb_owner';
-const NEON_PASS  = 'npg_ealfC5pOxMB0';
-const NEON_URL   = `https://${NEON_HOST}/sql`;
-const BATCH_SIZE = 200;
+'use strict';
 
-async function neonQuery(query, params=[]){
-  const connStr=`postgresql://${NEON_USER}:${NEON_PASS}@${NEON_HOST}/${NEON_DB}?sslmode=require`;
-  const res = await fetch(NEON_URL, {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Neon-Connection-String': connStr
-    },
-    body: JSON.stringify({query, params})
-  });
-  if(!res.ok){ const t=await res.text(); throw new Error(`Neon ${res.status}: ${t}`); }
-  return await res.json();
+// ── Helpers ──────────────────────────────────────────────────────
+function pad(n){ return String(n).padStart(2,'0'); }
+function dateToISO(v){
+  if(!v) return '';
+  if(v instanceof Date){ return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`; }
+  const s=String(v).trim();
+  // Formatos comunes: 2026-04-05, 2026-04-05T..., 05/04/2026, 5/4/2026
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
+  return s.slice(0,10);
 }
+function getFecha(r){ return dateToISO(r['start_date']); }
+function normMonth(f){ return f?f.slice(0,7):''; }
+function countViajes(v){ const n=parseInt(v)||0; return n>0?n:1; }
 
 function addLog(msg, type='info'){
   const box=document.getElementById('logBox');
   box.classList.add('show');
   const now=new Date();
-  const ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const ts=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   const line=document.createElement('div');
   line.className=`log-line ${type}`;
-  line.innerHTML=`<span class="ts">${ts}</span><span class="msg">${msg}</span>`;
+  line.innerHTML=`<span class="ts">${ts}</span><span class="msg"></span>`;
+  line.querySelector('.msg').textContent=msg;
   box.prepend(line);
 }
 function setProgress(pct, label){
@@ -154,133 +184,407 @@ function setProgress(pct, label){
   document.getElementById('progressLabel').textContent=label;
 }
 
-let selectedFile=null;
+// ── Estado ───────────────────────────────────────────────────────
+let DATA = [];
+let FLOTA_MAP = {};
+let COORD_RAW = [];
+let JEFE_BY_COORD = {};
+let selectedFile = null;
+let dataReady = false;
+
+// ── Drop & file selection ────────────────────────────────────────
 const dz=document.getElementById('dz');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
 dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
 document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
 
-function handleFile(file){
+async function handleFile(file){
   selectedFile=file;
   document.getElementById('fileInfo').classList.add('show');
   document.getElementById('fileName').textContent=file.name;
   document.getElementById('fileMeta').textContent=`${(file.size/1024/1024).toFixed(2)} MB · ${new Date(file.lastModified).toLocaleDateString('es-MX')}`;
-  document.getElementById('uploadBtn').disabled=false;
-  document.getElementById('btnText').textContent='Subir a Neon → Reemplazar datos';
   document.getElementById('successBanner').classList.remove('show');
   document.getElementById('logBox').innerHTML='';
   document.getElementById('logBox').classList.remove('show');
+  document.getElementById('progressWrap').classList.remove('show');
+
+  // Lee y prepara los datos al instante para mostrar filtros y validaciones
+  await prepareData();
 }
 
-document.getElementById('uploadBtn').addEventListener('click', async ()=>{
-  if(!selectedFile) return;
-  const sheetName=document.getElementById('sheetName').value.trim()||'NS';
-  const tableName=document.getElementById('tableName').value||'ns_data';
-  const btn=document.getElementById('uploadBtn');
+// ── Lectura del Excel y población de filtros ─────────────────────
+async function prepareData(){
+  const btn=document.getElementById('generateBtn');
+  btn.disabled=true;
+  document.getElementById('btnText').textContent='Leyendo archivo...';
+  document.getElementById('btnIcon').textContent='⏳';
+  dataReady=false;
+  try{
+    const buffer=await selectedFile.arrayBuffer();
+    addLog(`Leyendo: ${selectedFile.name}`);
+    const wb=XLSX.read(new Uint8Array(buffer),{type:'array',cellDates:true,dateNF:'YYYY-MM-DD'});
+    addLog(`Hojas detectadas: ${wb.SheetNames.join(', ')}`);
+
+    // ── Detectar hojas (insensible a mayúsculas) ──
+    const findSheet=(...patterns)=>{
+      for(const pat of patterns){
+        const re=pat instanceof RegExp?pat:new RegExp(`^${pat}$`,'i');
+        const found=wb.SheetNames.find(n=>re.test(n));
+        if(found) return found;
+      }
+      return null;
+    };
+    const vfSheet    = findSheet(/^vf$/i, /^ns$/i, /viajes/i, /datos/i);
+    const flotaSheet = findSheet(/^flota$/i, /flota/i);
+    const inputsSheet= findSheet(/^inputs?$/i, /^entrada/i, /coordinadores?/i);
+
+    // ── Mostrar estatus de hojas ──
+    const sd=document.getElementById('sheetsDetected');
+    sd.classList.add('show');
+    sd.innerHTML=`
+      <div class="sheet-item"><span>VF (datos):</span><span class="${vfSheet?'ok':'miss'}">${vfSheet||'NO ENCONTRADA'}</span></div>
+      <div class="sheet-item"><span>Flota (carros activos):</span><span class="${flotaSheet?'ok':'opt'}">${flotaSheet||'opcional · sin filtro'}</span></div>
+      <div class="sheet-item"><span>Inputs (coordinadores):</span><span class="${inputsSheet?'ok':'opt'}">${inputsSheet||'opcional · sin coord/jefe'}</span></div>
+    `;
+
+    if(!vfSheet){
+      addLog(`No se encontró hoja de viajes (VF/NS).`,'err');
+      document.getElementById('btnText').textContent='Falta hoja VF';
+      return;
+    }
+
+    // ── Cargar VF ──
+    DATA = XLSX.utils.sheet_to_json(wb.Sheets[vfSheet],{defval:'',raw:false});
+    if(!DATA.length){ addLog('La hoja VF está vacía.','err'); return; }
+    addLog(`VF: ${DATA.length.toLocaleString()} filas · ${Object.keys(DATA[0]).length} columnas`,'ok');
+
+    // ── Cargar Flota ──
+    FLOTA_MAP={};
+    if(flotaSheet){
+      const fr=XLSX.utils.sheet_to_json(wb.Sheets[flotaSheet],{defval:''});
+      fr.forEach(r=>{
+        const id=String(r['IDS']||r['ID']||r['id']||'').trim();
+        if(!id) return;
+        FLOTA_MAP[id]={
+          planta:(r['PLANTA']||r['Planta']||'').toString().trim(),
+          marca: (r['Marca'] ||'').toString().trim(),
+          modelo:(r['Modelo']||'').toString().trim(),
+          estatus:(r['Estatus']||'').toString().trim(),
+        };
+      });
+      addLog(`Flota: ${Object.keys(FLOTA_MAP).length} unidades activas`,'ok');
+    } else {
+      addLog('Sin hoja Flota — no se filtran carros activos.','warn');
+    }
+
+    // ── Cargar Inputs ──
+    COORD_RAW=[]; JEFE_BY_COORD={};
+    if(inputsSheet){
+      const ir=XLSX.utils.sheet_to_json(wb.Sheets[inputsSheet],{defval:''});
+      ir.forEach(r=>{
+        const keys=Object.keys(r);
+        const ccKey=keys.find(k=>k.trim().toUpperCase().replace(/\s+/g,'').includes('CLIENTECOOR'));
+        const coKey=keys.find(k=>k.trim().toUpperCase()==='COORDINADOR');
+        const jeKey=keys.find(k=>k.trim().toUpperCase()==='JEFE');
+        if(ccKey&&coKey){
+          const cc=String(r[ccKey]||'').trim();
+          const co=String(r[coKey]||'').trim();
+          if(cc&&co) COORD_RAW.push({cc,co});
+        }
+        if(coKey&&jeKey){
+          const co=String(r[coKey]||'').trim();
+          const je=String(r[jeKey]||'').trim();
+          if(co&&je && !JEFE_BY_COORD[co]) JEFE_BY_COORD[co]=je;
+        }
+      });
+      const jefeCount=Object.keys(JEFE_BY_COORD).length;
+      addLog(`Inputs: ${COORD_RAW.length} reglas de coordinador${jefeCount?' · '+jefeCount+' coord→jefe':''}`,'ok');
+    } else {
+      addLog('Sin hoja Inputs — coordinador y jefe quedarán vacíos.','warn');
+    }
+
+    // ── Aplicar buildCoordMap ──
+    buildCoordMap();
+    // ── Asignar Jefe por coordinador ──
+    if(Object.keys(JEFE_BY_COORD).length){
+      let asignados=0;
+      DATA.forEach(r=>{
+        const co=(r['Coordinador']||'').trim();
+        if(co && JEFE_BY_COORD[co]){ r['Jefe']=JEFE_BY_COORD[co]; asignados++; }
+      });
+      addLog(`Jefe asignado a ${asignados.toLocaleString()} filas vía coord→jefe`,'ok');
+    }
+
+    // ── Poblar filtros (mes y cliente) ──
+    const meses=new Set();
+    const clientes=new Set();
+    DATA.forEach(r=>{
+      const m=normMonth(getFecha(r)); if(m) meses.add(m);
+      const cli=String(r['group']||'').trim(); if(cli) clientes.add(cli);
+    });
+    const mesSel=document.getElementById('filterMes');
+    const cliSel=document.getElementById('filterCliente');
+    mesSel.innerHTML='<option value="">— Todos los meses —</option>'+
+      [...meses].sort().reverse().map(m=>`<option value="${m}">${m}</option>`).join('');
+    cliSel.innerHTML='<option value="">— Todos —</option>'+
+      [...clientes].sort().map(c=>`<option value="${c}">${c}</option>`).join('');
+
+    document.getElementById('filterConfig').classList.add('show');
+
+    dataReady=true;
+    btn.disabled=false;
+    document.getElementById('btnIcon').textContent='📥';
+    document.getElementById('btnText').textContent='Generar catálogo de unidades';
+
+  }catch(e){
+    addLog(`ERROR leyendo: ${e.message}`,'err');
+    console.error(e);
+    document.getElementById('btnText').textContent='Error — revisa el log';
+  }
+}
+
+// ── buildCoordMap (idéntico al dashboard) ────────────────────────
+function buildCoordMap(){
+  if(!COORD_RAW.length||!DATA.length) return;
+  const clientNames=new Set(DATA.map(r=>String(r['group']||'').trim()).filter(Boolean));
+  const assign={};
+
+  COORD_RAW.forEach(({cc,co})=>{
+    if(clientNames.has(cc)){
+      if(!assign[cc]) assign[cc]={__default:co};
+      else assign[cc].__default=co;
+    } else {
+      let found=null;
+      for(const cli of clientNames){
+        if(cc.length>cli.length&&cc.startsWith(cli+'-')){ found=cli; break; }
+      }
+      if(found){
+        if(!assign[found]) assign[found]={__default:null};
+        const prefix=cc.slice(found.length+1).toUpperCase();
+        assign[found][prefix]=co;
+      }
+    }
+  });
+
+  // Pase 1: enriquecer por cliente + prefijo de ruta
+  DATA.forEach(r=>{
+    const client=String(r['group']||'').trim();
+    const route =String(r['des']||'').trim().toUpperCase();
+    const entry =assign[client]; if(!entry) return;
+    let coord=entry.__default||'';
+    for(const [pfx,co] of Object.entries(entry)){
+      if(pfx==='__default') continue;
+      if(route.startsWith(pfx+'-')||route.startsWith(pfx+' ')||route===pfx){ coord=co; break; }
+    }
+    if(coord) r['Coordinador']=coord;
+  });
+
+  // Pase 2: fallback por carro (coord más frecuente para ese carro)
+  const carCoordCount={};
+  DATA.forEach(r=>{
+    const co=String(r['Coordinador']||'').trim();
+    const car=String(r['car']||'').trim();
+    if(!co||!car) return;
+    if(!carCoordCount[car]) carCoordCount[car]={};
+    carCoordCount[car][co]=(carCoordCount[car][co]||0)+countViajes(r['Cantidad de viajes']);
+  });
+
+  // Pase 3: fallback por cliente (coord más frecuente para ese cliente)
+  const cliCoordCount={};
+  DATA.forEach(r=>{
+    const co=String(r['Coordinador']||'').trim();
+    const cli=String(r['group']||'').trim();
+    if(!co||!cli) return;
+    if(!cliCoordCount[cli]) cliCoordCount[cli]={};
+    cliCoordCount[cli][co]=(cliCoordCount[cli][co]||0)+countViajes(r['Cantidad de viajes']);
+  });
+
+  function topEntry(obj){
+    if(!obj) return '';
+    const e=Object.entries(obj).sort((a,b)=>b[1]-a[1])[0];
+    return e?e[0]:'';
+  }
+
+  let pase2=0;
+  DATA.forEach(r=>{
+    if(String(r['Coordinador']||'').trim()) return;
+    const car=String(r['car']||'').trim();
+    const cli=String(r['group']||'').trim();
+    const bycar = car?topEntry(carCoordCount[car]):'';
+    const bycli = cli?topEntry(cliCoordCount[cli]):'';
+    const resolved = bycar||bycli;
+    if(resolved){ r['Coordinador']=resolved; pase2++; }
+  });
+
+  const total=DATA.filter(r=>String(r['Coordinador']||'').trim()).length;
+  addLog(`Coordinador asignado a ${total.toLocaleString()}/${DATA.length.toLocaleString()} filas (${pase2.toLocaleString()} por fallback)`,'ok');
+}
+
+// ── Periodo activo (para nombre de archivo y toast) ──────────────
+function getActivePeriod(filters){
+  const MESES=['Enero','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  let label='', fileTag='';
+  if(filters.mes){
+    const [y,m]=filters.mes.split('-');
+    label=(MESES[parseInt(m,10)-1]||m)+' '+y;
+    fileTag=filters.mes;
+  } else if(filters.fi||filters.ff){
+    label=(filters.fi||'inicio')+' al '+(filters.ff||'hoy');
+    fileTag=(filters.fi||'')+'_'+(filters.ff||'');
+  } else {
+    const meses=new Set();
+    DATA.forEach(r=>{ const m=normMonth(getFecha(r)); if(m) meses.add(m); });
+    const arr=[...meses].sort();
+    if(arr.length){
+      const [y0,m0]=arr[0].split('-');
+      const [y1,m1]=arr[arr.length-1].split('-');
+      label=(MESES[parseInt(m0,10)-1]||m0)+' '+y0+(arr.length>1?' – '+(MESES[parseInt(m1,10)-1]||m1)+' '+y1:'');
+      fileTag=arr[0]+(arr.length>1?'_'+arr[arr.length-1]:'');
+    } else { label='Sin fecha'; fileTag='all'; }
+  }
+  if(filters.cliente){ label+=' · '+filters.cliente; fileTag+='_'+filters.cliente.replace(/[^a-zA-Z0-9]/g,''); }
+  return { label, fileTag };
+}
+
+// ── Generar catálogo (idéntico al exportCatalogo del dashboard) ──
+document.getElementById('generateBtn').addEventListener('click', ()=>{
+  if(!dataReady||!DATA.length){ addLog('No hay datos cargados.','err'); return; }
+
+  const btn=document.getElementById('generateBtn');
   btn.disabled=true;
   document.getElementById('btnIcon').textContent='⏳';
-  document.getElementById('btnText').textContent='Subiendo...';
+  document.getElementById('btnText').textContent='Generando...';
   document.getElementById('progressWrap').classList.add('show');
   document.getElementById('successBanner').classList.remove('show');
 
   try{
-    // 1. Leer Excel
-    addLog(`Leyendo: ${selectedFile.name}`);
-    setProgress(5,'Leyendo Excel...');
-    const buffer=await selectedFile.arrayBuffer();
-    const wb=XLSX.read(new Uint8Array(buffer),{type:'array',cellDates:true,dateNF:'YYYY-MM-DD'});
-    const ws=wb.Sheets[sheetName];
-    if(!ws) throw new Error(`No se encontró la hoja "${sheetName}". Hojas: ${wb.SheetNames.join(', ')}`);
-    const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
-    if(!rows.length) throw new Error(`La hoja "${sheetName}" está vacía.`);
-    addLog(`${rows.length.toLocaleString()} filas · ${Object.keys(rows[0]).length} columnas`,'ok');
-    setProgress(15,`${rows.length.toLocaleString()} filas encontradas...`);
+    const filters={
+      mes: document.getElementById('filterMes').value,
+      fi:  document.getElementById('filterFi').value,
+      ff:  document.getElementById('filterFf').value,
+      cliente: document.getElementById('filterCliente').value,
+    };
 
-    // 2. Sanitizar nombres de columnas
-    const rawCols=Object.keys(rows[0]);
-    const cols=rawCols.map(c=>c.trim()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')  // quitar acentos: ó→o, é→e, ñ→n
-      .toLowerCase()
-      .replace(/\s+/g,'_')
-      .replace(/[^a-z0-9_]/g,'_')
-      .replace(/_+/g,'_')
-      .replace(/_$/,'')
-      .replace(/^(\d)/,'c$1'));
-    addLog(`Cols: ${cols.slice(0,5).join(', ')}${cols.length>5?' +'+( cols.length-5)+' más':''}`);
+    setProgress(15,'Aplicando filtros...');
 
-    // 3. Detectar columna de fecha y fechas únicas del Excel
-    const dateColRaw = rawCols.find(c => c.trim().toLowerCase() === 'start_date')
-                    || rawCols.find(c => c.trim().toLowerCase().includes('start_date'));
-    const dateColSan = dateColRaw ? cols[rawCols.indexOf(dateColRaw)] : null;
-
-    const uniqueDates = [...new Set(rows.map(r => {
-      const v = r[dateColRaw];
-      if(!v) return null;
-      if(v instanceof Date){
-        const pad=n=>String(n).padStart(2,'0');
-        return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`;
+    // Filtros + exclusión de jefe inválido (igual al dashboard)
+    const rows=DATA.filter(r=>{
+      if(filters.mes){ if(normMonth(getFecha(r))!==filters.mes) return false; }
+      else {
+        const d=getFecha(r);
+        if(filters.fi && d < filters.fi) return false;
+        if(filters.ff && d > filters.ff) return false;
       }
-      return String(v).slice(0,10);
-    }).filter(Boolean))];
+      if(filters.cliente && String(r['group']||'').trim()!==filters.cliente) return false;
+      // Excluir filas sin jefe válido SOLO si tenemos mapeo de jefes (si no, no hay nada que validar)
+      if(Object.keys(JEFE_BY_COORD).length){
+        const jefe=String(r['Jefe']||'').trim();
+        if(!jefe || jefe==='#N/A' || jefe==='#REF!' || jefe.startsWith('#')) return false;
+      }
+      return true;
+    });
 
-    // 4. Crear tabla si no existe (primera vez)
-    setProgress(22,'Verificando tabla...');
-    const colDefs=cols.map(c=>`"${c}" TEXT`).join(', ');
-    await neonQuery(`CREATE TABLE IF NOT EXISTS ${tableName} (${colDefs})`);
+    addLog(`Filas tras filtros: ${rows.length.toLocaleString()}`);
+    if(!rows.length){ addLog('Sin datos para los filtros seleccionados.','err'); resetBtn(); return; }
 
-    // 5. Borrar solo las fechas que trae el Excel
-    if(uniqueDates.length && dateColSan){
-      setProgress(26,'Borrando fechas existentes...');
-      const placeholders=uniqueDates.map((_,i)=>`$${i+1}`).join(',');
-      await neonQuery(`DELETE FROM ${tableName} WHERE "${dateColSan}" IN (${placeholders})`, uniqueDates);
-      addLog(`Fechas borradas: ${uniqueDates.join(', ')}`,'warn');
-    } else {
-      addLog('No se detectó columna start_date — se inserta sin borrar','warn');
+    setProgress(40,'Agrupando por carro y coordinador...');
+
+    // Por cada carro, contar viajes por coordinador y quedarse con el mayoritario
+    const bycar={};
+    rows.forEach(r=>{
+      const carro=String(r['car']||'').trim(); if(!carro) return;
+      if(!bycar[carro]) bycar[carro]={coords:{}};
+      const coord=String(r['Coordinador']||'').trim()||'(Sin asignar)';
+      if(!bycar[carro].coords[coord])
+        bycar[carro].coords[coord]={viajes:0,clientes:{},rutas:{},jefes:{},operadores:{},workerIds:{}};
+      const v=countViajes(r['Cantidad de viajes']);
+      const d=bycar[carro].coords[coord];
+      d.viajes+=v;
+      const cli=String(r['group']||'').trim();    if(cli) d.clientes[cli]=(d.clientes[cli]||0)+v;
+      const ruta=String(r['des']||'').trim();     if(ruta)d.rutas[ruta]=(d.rutas[ruta]||0)+v;
+      const jefe=String(r['Jefe']||'').trim();    if(jefe)d.jefes[jefe]=(d.jefes[jefe]||0)+v;
+      const ope=String(r['operador']||'').trim(); if(ope) d.operadores[ope]=(d.operadores[ope]||0)+v;
+      const wid=String(r['worker_id']||'').trim();if(wid) d.workerIds[wid]=(d.workerIds[wid]||0)+v;
+    });
+
+    function top(obj){ return Object.entries(obj).sort((a,b)=>b[1]-a[1])[0]?.[0]||''; }
+
+    setProgress(65,'Eligiendo mayoritarios por carro...');
+
+    const catalog=Object.entries(bycar).map(([carro,data])=>{
+      const coord=top(Object.fromEntries(
+        Object.entries(data.coords).map(([c,d])=>[c,d.viajes])
+      ));
+      const d=data.coords[coord]||{clientes:{},rutas:{},jefes:{},operadores:{},workerIds:{}};
+      return {
+        carro, coord,
+        cliente:  top(d.clientes),
+        ruta:     top(d.rutas),
+        jefe:     top(d.jefes),
+        operador: top(d.operadores),
+        workerId: top(d.workerIds),
+        viajes:   data.coords[coord]?.viajes||0,
+      };
+    }).sort((a,b)=>a.coord.localeCompare(b.coord)||a.carro.localeCompare(b.carro));
+
+    setProgress(80,'Cruzando con Flota...');
+
+    // Filtrar solo carros activos en Flota (si hay)
+    const flotaKeys=Object.keys(FLOTA_MAP);
+    const catalogFinal=flotaKeys.length
+      ? catalog.filter(r=>FLOTA_MAP[r.carro])
+      : catalog;
+    if(flotaKeys.length){
+      const cortados=catalog.length-catalogFinal.length;
+      addLog(`Flota: ${catalogFinal.length} activos · ${cortados} fuera de catálogo`,'ok');
     }
 
-    setProgress(30,'Insertando datos...');
-    const total=rows.length;
-    let inserted=0;
+    if(!catalogFinal.length){ addLog('Catálogo vacío después de cruzar con Flota.','err'); resetBtn(); return; }
 
-    for(let i=0;i<total;i+=BATCH_SIZE){
-      const batch=rows.slice(i,i+BATCH_SIZE);
-      const colNames=cols.map(c=>`"${c}"`).join(',');
-      const placeholders=batch.map((_,ri)=>{
-        const offset=ri*cols.length;
-        return '('+cols.map((_,ci)=>`$${offset+ci+1}`).join(',')+')'
-      }).join(',');
-      const values=batch.flatMap(row=>rawCols.map(rc=>{
-        const v=row[rc];
-        if(v===null||v===undefined||v==='') return null;
-        if(v instanceof Date){
-          const pad=n=>String(n).padStart(2,'0');
-          return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`;
-        }
-        return String(v);
-      }));
-      await neonQuery(`INSERT INTO ${tableName} (${colNames}) VALUES ${placeholders}`,values);
-      inserted+=batch.length;
-      const pct=30+Math.round((inserted/total)*68);
-      setProgress(pct,`Insertando: ${inserted.toLocaleString()} / ${total.toLocaleString()} filas...`);
+    setProgress(92,'Generando Excel...');
+
+    // ── FIX: ahora SÍ se ordena por PLANTA → RUTA antes de escribir ──
+    const dataRows=catalogFinal.map(r=>[r.cliente,r.ruta,r.jefe,r.coord,r.carro,r.workerId,r.operador]);
+    dataRows.sort((a,b)=>String(a[0]).localeCompare(String(b[0]))||String(a[1]).localeCompare(String(b[1])));
+
+    const header=['PLANTA','RUTA','JEFE','COORDINADOR','ID VEH','NOMINA OP','NOMBRE OP'];
+    const wsData=[header,...dataRows];
+    const ws=XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols']=[{wch:26},{wch:38},{wch:24},{wch:26},{wch:10},{wch:14},{wch:34}];
+    // Header en negrita (XLSX nativo)
+    const range=XLSX.utils.decode_range(ws['!ref']);
+    for(let c=range.s.c;c<=range.e.c;c++){
+      const addr=XLSX.utils.encode_cell({r:0,c});
+      if(ws[addr]){ ws[addr].s={font:{bold:true}}; }
     }
+
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Catálogo Unidades');
+
+    const {label:pLabel,fileTag:pTag}=getActivePeriod(filters);
+    const fileName=`Catalogo_Unidades_${pTag}.xlsx`;
+    XLSX.writeFile(wb,fileName);
 
     setProgress(100,'¡Listo!');
-    addLog(`✅ ${inserted.toLocaleString()} filas insertadas`,'ok');
+    addLog(`✅ ${catalogFinal.length} carros exportados → ${fileName}`,'ok');
     document.getElementById('successBanner').classList.add('show');
-    document.getElementById('successSub').textContent=
-      `${inserted.toLocaleString()} filas en "${tableName}" · ${new Date().toLocaleString('es-MX')}`;
+    document.getElementById('successSub').textContent=`${catalogFinal.length} carros · ${pLabel} · ${new Date().toLocaleString('es-MX')}`;
     document.getElementById('btnIcon').textContent='✅';
-    document.getElementById('btnText').textContent='Subir otro archivo';
+    document.getElementById('btnText').textContent='Generar otro catálogo';
     btn.disabled=false;
 
   }catch(e){
     addLog(`ERROR: ${e.message}`,'err');
-    setProgress(0,'Error — revisa el log');
-    document.getElementById('btnIcon').textContent='⬆️';
-    document.getElementById('btnText').textContent='Reintentar';
-    btn.disabled=false;
     console.error(e);
+    setProgress(0,'Error — revisa el log');
+    resetBtn();
+  }
+
+  function resetBtn(){
+    btn.disabled=false;
+    document.getElementById('btnIcon').textContent='📥';
+    document.getElementById('btnText').textContent='Reintentar';
   }
 });
 </script>
