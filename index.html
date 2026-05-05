@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Catálogo de Unidades — Settepi</title>
+<title>Uploader NS Data — Settepi</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
@@ -14,7 +14,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2.5rem;width:100%;max-width:620px;box-shadow:0 4px 24px rgba(0,0,0,.08);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2.5rem;width:100%;max-width:580px;box-shadow:0 4px 24px rgba(0,0,0,.08);}
   .logo{display:flex;align-items:center;gap:.75rem;margin-bottom:2rem;}
   .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--green);}
   .logo-text{font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
@@ -31,30 +31,26 @@
   .file-icon{font-size:1.8rem;}
   .file-name{font-weight:600;font-size:.9rem;word-break:break-all;}
   .file-meta{font-size:.78rem;color:var(--muted);margin-top:.2rem;}
-  .sheets-detected{display:none;margin-top:1rem;padding:.85rem 1rem;background:#f1f5f9;border:1px solid var(--border);border-radius:8px;}
-  .sheets-detected.show{display:block;}
-  .sheet-item{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;padding:.25rem 0;font-family:'IBM Plex Mono',monospace;}
-  .sheet-item .ok{color:var(--green);font-weight:600;}
-  .sheet-item .miss{color:var(--red);font-weight:600;}
-  .sheet-item .opt{color:var(--yellow);font-weight:600;}
-  .config{margin-top:1.5rem;display:none;}
-  .config.show{display:block;}
-  .config label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em;}
+  .config{margin-top:1.5rem;}
+  .config label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em;}
   .config-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-  .config select,.config input[type=date],.config input[type=text]{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem .8rem;border-radius:7px;font-size:.875rem;font-family:inherit;outline:none;transition:border .2s;}
+  .config select,.config input[type=text]{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem .8rem;border-radius:7px;font-size:.875rem;font-family:inherit;outline:none;transition:border .2s;}
   .config select:focus,.config input:focus{border-color:var(--green);}
-  .filter-hint{font-size:.7rem;color:var(--muted);margin-top:-.5rem;margin-bottom:1rem;font-style:italic;}
-  .btn{width:100%;padding:.85rem;border-radius:8px;border:none;cursor:pointer;font-size:.95rem;font-weight:700;font-family:inherit;background:var(--green);color:#ffffff;transition:all .2s;margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem;}
-  .btn:hover:not(:disabled){background:#15803d;transform:translateY(-1px);}
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1.5rem;}
+  .btn{padding:.85rem;border-radius:8px;border:none;cursor:pointer;font-size:.9rem;font-weight:700;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;}
+  .btn-primary{background:var(--green);color:#fff;}
+  .btn-primary:hover:not(:disabled){background:#15803d;transform:translateY(-1px);}
+  .btn-secondary{background:#fff;color:var(--green);border:1.5px solid var(--green);}
+  .btn-secondary:hover:not(:disabled){background:rgba(22,163,74,.06);transform:translateY(-1px);}
   .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
   .progress-wrap{margin-top:1.5rem;display:none;}
   .progress-wrap.show{display:block;}
   .progress-bar-bg{background:var(--border);border-radius:99px;height:6px;overflow:hidden;}
   .progress-bar{height:100%;background:var(--green);border-radius:99px;transition:width .3s;width:0%;}
   .progress-label{font-size:.8rem;color:var(--muted);margin-top:.5rem;font-family:'IBM Plex Mono',monospace;}
-  .log{margin-top:1.5rem;max-height:200px;overflow-y:auto;display:none;}
+  .log{margin-top:1.5rem;max-height:180px;overflow-y:auto;display:none;}
   .log.show{display:block;}
-  .log-line{font-family:'IBM Plex Mono',monospace;font-size:.75rem;padding:.3rem 0;border-bottom:1px solid var(--border);display:flex;gap:.75rem;}
+  .log-line{font-family:'IBM Plex Mono',monospace;font-size:.75rem;padding:.25rem 0;border-bottom:1px solid var(--border);display:flex;gap:.75rem;}
   .log-line:last-child{border:none;}
   .log-line .ts{color:var(--muted);flex-shrink:0;}
   .log-line.ok .msg{color:var(--green);}
@@ -65,20 +61,16 @@
   .success-banner .s-icon{font-size:2rem;margin-bottom:.5rem;}
   .success-banner .s-title{font-weight:700;color:var(--green);margin-bottom:.25rem;}
   .success-banner .s-sub{font-size:.82rem;color:var(--muted);}
-  details.spec{margin-top:1.5rem;font-size:.78rem;color:var(--muted);}
-  details.spec summary{cursor:pointer;font-weight:600;padding:.4rem 0;}
-  details.spec code{background:#f1f5f9;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text);}
-  details.spec ul{margin-left:1.2rem;margin-top:.4rem;line-height:1.6;}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="logo">
     <div class="logo-dot"></div>
-    <span class="logo-text">Settepi · Catálogo de Unidades</span>
+    <span class="logo-text">Settepi · NS Data · Neon DB</span>
   </div>
-  <h1>Generador de catálogo</h1>
-  <p class="subtitle">Sube el Excel con hojas <strong>VF</strong>, <strong>Flota</strong> e <strong>Inputs</strong> para generar el catálogo de unidades por coordinador.</p>
+  <h1>Actualizar datos NS</h1>
+  <p class="subtitle">Arrastra el Excel para subirlo a Neon o descargar el catálogo de unidades.</p>
 
   <div class="dropzone" id="dz">
     <input type="file" id="fileInput" accept=".xlsx,.xls">
@@ -95,36 +87,31 @@
     </div>
   </div>
 
-  <div class="sheets-detected" id="sheetsDetected"></div>
-
-  <div class="config" id="filterConfig">
+  <div class="config">
     <div class="config-row">
       <div>
-        <label>Mes (opcional)</label>
-        <select id="filterMes"><option value="">— Todos los meses —</option></select>
+        <label>Hoja del Excel</label>
+        <input type="text" id="sheetName" value="NS" placeholder="NS">
       </div>
       <div>
-        <label>Cliente (opcional)</label>
-        <select id="filterCliente"><option value="">— Todos —</option></select>
+        <label>Tabla en Neon</label>
+        <select id="tableName">
+          <option value="ns_data">ns_data</option>
+        </select>
       </div>
     </div>
-    <div class="config-row">
-      <div>
-        <label>Fecha inicio</label>
-        <input type="date" id="filterFi">
-      </div>
-      <div>
-        <label>Fecha fin</label>
-        <input type="date" id="filterFf">
-      </div>
-    </div>
-    <div class="filter-hint">Si seleccionas Mes, las fechas se ignoran. Sin filtros = todo el archivo.</div>
   </div>
 
-  <button class="btn" id="generateBtn" disabled>
-    <span id="btnIcon">📥</span>
-    <span id="btnText">Selecciona un archivo primero</span>
-  </button>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="uploadBtn" disabled>
+      <span id="btnIcon">⬆️</span>
+      <span id="btnText">Subir a Neon</span>
+    </button>
+    <button class="btn btn-secondary" id="catalogBtn" disabled>
+      <span id="catIcon">📥</span>
+      <span id="catText">Catálogo Unidades</span>
+    </button>
+  </div>
 
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
@@ -135,45 +122,38 @@
 
   <div class="success-banner" id="successBanner">
     <div class="s-icon">✅</div>
-    <div class="s-title">¡Catálogo generado!</div>
+    <div class="s-title" id="successTitle">¡Listo!</div>
     <div class="s-sub" id="successSub">—</div>
   </div>
-
-  <details class="spec">
-    <summary>📋 Estructura esperada del Excel</summary>
-    <ul>
-      <li><strong>Hoja VF</strong> — datos crudos del sistema. Columnas mínimas: <code>car</code>, <code>group</code> (cliente), <code>des</code> (ruta), <code>start_date</code>, <code>operador</code>, <code>worker_id</code>.</li>
-      <li><strong>Hoja Flota</strong> — carros activos. Columna: <code>IDS</code> (lista de IDs de vehículos vigentes). Opcional pero recomendado: filtra carros dados de baja.</li>
-      <li><strong>Hoja Inputs</strong> — dos tablas paralelas independientes:
-        <ul>
-          <li>Cols A-F: <code>CLIENTE</code> + <code>Jefe</code> + <code>Gerente</code> (+ Cantidad de carros, UDN, Horas perm.)</li>
-          <li>Cols H-I: <code>CLIENTE COOR</code> (ej. <code>CON-CONMET-F1</code>) + <code>COORDINADOR</code></li>
-        </ul>
-        Las filas no se corresponden — cada tabla se procesa por separado.
-      </li>
-    </ul>
-  </details>
 </div>
 
 <script>
 'use strict';
 
-// ── Helpers ──────────────────────────────────────────────────────
-function pad(n){ return String(n).padStart(2,'0'); }
-function dateToISO(v){
-  if(!v) return '';
-  if(v instanceof Date){ return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`; }
-  const s=String(v).trim();
-  // Formatos comunes: 2026-04-05, 2026-04-05T..., 05/04/2026, 5/4/2026
-  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return `${m[1]}-${m[2]}-${m[3]}`;
-  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if(m) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
-  return s.slice(0,10);
-}
-function getFecha(r){ return dateToISO(r['start_date']); }
-function normMonth(f){ return f?f.slice(0,7):''; }
-function countViajes(v){ const n=parseInt(v)||0; return n>0?n:1; }
+// ── Neon config ──────────────────────────────────────────────────
+const NEON_HOST  = 'ep-royal-dream-ambqsb0c.c-5.us-east-1.aws.neon.tech';
+const NEON_DB    = 'neondb';
+const NEON_USER  = 'neondb_owner';
+const NEON_PASS  = 'npg_ealfC5pOxMB0';
+const NEON_URL   = `https://${NEON_HOST}/sql`;
+const BATCH_SIZE = 200;
 
+async function neonQuery(query, params=[]){
+  const connStr=`postgresql://${NEON_USER}:${NEON_PASS}@${NEON_HOST}/${NEON_DB}?sslmode=require`;
+  const res = await fetch(NEON_URL, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Neon-Connection-String': connStr
+    },
+    body: JSON.stringify({query, params})
+  });
+  if(!res.ok){ const t=await res.text(); throw new Error(`Neon ${res.status}: ${t}`); }
+  return await res.json();
+}
+
+// ── Helpers UI ───────────────────────────────────────────────────
+function pad(n){ return String(n).padStart(2,'0'); }
 function addLog(msg, type='info'){
   const box=document.getElementById('logBox');
   box.classList.add('show');
@@ -181,7 +161,8 @@ function addLog(msg, type='info'){
   const ts=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   const line=document.createElement('div');
   line.className=`log-line ${type}`;
-  line.innerHTML=`<span class="ts">${ts}</span><span class="msg"></span>`;
+  line.innerHTML=`<span class="ts"></span><span class="msg"></span>`;
+  line.querySelector('.ts').textContent=ts;
   line.querySelector('.msg').textContent=msg;
   box.prepend(line);
 }
@@ -189,95 +170,201 @@ function setProgress(pct, label){
   document.getElementById('progressBar').style.width=pct+'%';
   document.getElementById('progressLabel').textContent=label;
 }
+function showSuccess(title, sub){
+  document.getElementById('successTitle').textContent=title;
+  document.getElementById('successSub').textContent=sub;
+  document.getElementById('successBanner').classList.add('show');
+}
 
-// ── Estado ───────────────────────────────────────────────────────
-let DATA = [];
-let FLOTA_MAP = {};
-let COORD_RAW = [];
-let JEFE_BY_CLIENTE = {};
-let GERENTE_BY_CLIENTE = {};
-let selectedFile = null;
-let dataReady = false;
+// ── Helpers de datos ─────────────────────────────────────────────
+function dateToISO(v){
+  if(!v) return '';
+  if(v instanceof Date){ return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`; }
+  const s=String(v).trim();
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
+  return s.slice(0,10);
+}
+function countViajes(v){ const n=parseInt(v)||0; return n>0?n:1; }
+function findSheet(wb, ...patterns){
+  for(const pat of patterns){
+    const re=pat instanceof RegExp?pat:new RegExp(`^${pat}$`,'i');
+    const found=wb.SheetNames.find(n=>re.test(n));
+    if(found) return found;
+  }
+  return null;
+}
 
-// ── Drop & file selection ────────────────────────────────────────
+// ── File handling ────────────────────────────────────────────────
+let selectedFile=null;
 const dz=document.getElementById('dz');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
 dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
 document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
 
-async function handleFile(file){
+function handleFile(file){
   selectedFile=file;
   document.getElementById('fileInfo').classList.add('show');
   document.getElementById('fileName').textContent=file.name;
   document.getElementById('fileMeta').textContent=`${(file.size/1024/1024).toFixed(2)} MB · ${new Date(file.lastModified).toLocaleDateString('es-MX')}`;
+  document.getElementById('uploadBtn').disabled=false;
+  document.getElementById('catalogBtn').disabled=false;
+  document.getElementById('btnText').textContent='Subir a Neon';
+  document.getElementById('catText').textContent='Catálogo Unidades';
+  document.getElementById('btnIcon').textContent='⬆️';
+  document.getElementById('catIcon').textContent='📥';
   document.getElementById('successBanner').classList.remove('show');
   document.getElementById('logBox').innerHTML='';
   document.getElementById('logBox').classList.remove('show');
   document.getElementById('progressWrap').classList.remove('show');
-
-  // Lee y prepara los datos al instante para mostrar filtros y validaciones
-  await prepareData();
 }
 
-// ── Lectura del Excel y población de filtros ─────────────────────
-async function prepareData(){
-  const btn=document.getElementById('generateBtn');
-  btn.disabled=true;
-  document.getElementById('btnText').textContent='Leyendo archivo...';
+// ── Subir a Neon (lógica original intacta) ───────────────────────
+document.getElementById('uploadBtn').addEventListener('click', async ()=>{
+  if(!selectedFile) return;
+  const sheetName=document.getElementById('sheetName').value.trim()||'NS';
+  const tableName=document.getElementById('tableName').value||'ns_data';
+  const btn=document.getElementById('uploadBtn');
+  const catBtn=document.getElementById('catalogBtn');
+  btn.disabled=true; catBtn.disabled=true;
   document.getElementById('btnIcon').textContent='⏳';
-  dataReady=false;
+  document.getElementById('btnText').textContent='Subiendo...';
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('successBanner').classList.remove('show');
+
   try{
-    const buffer=await selectedFile.arrayBuffer();
     addLog(`Leyendo: ${selectedFile.name}`);
+    setProgress(5,'Leyendo Excel...');
+    const buffer=await selectedFile.arrayBuffer();
     const wb=XLSX.read(new Uint8Array(buffer),{type:'array',cellDates:true,dateNF:'YYYY-MM-DD'});
-    addLog(`Hojas detectadas: ${wb.SheetNames.join(', ')}`);
+    const ws=wb.Sheets[sheetName];
+    if(!ws) throw new Error(`No se encontró la hoja "${sheetName}". Hojas: ${wb.SheetNames.join(', ')}`);
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+    if(!rows.length) throw new Error(`La hoja "${sheetName}" está vacía.`);
+    addLog(`${rows.length.toLocaleString()} filas · ${Object.keys(rows[0]).length} columnas`,'ok');
+    setProgress(15,`${rows.length.toLocaleString()} filas encontradas...`);
 
-    // ── Detectar hojas (insensible a mayúsculas) ──
-    const findSheet=(...patterns)=>{
-      for(const pat of patterns){
-        const re=pat instanceof RegExp?pat:new RegExp(`^${pat}$`,'i');
-        const found=wb.SheetNames.find(n=>re.test(n));
-        if(found) return found;
+    // Sanitizar nombres de columnas
+    const rawCols=Object.keys(rows[0]);
+    const cols=rawCols.map(c=>c.trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .replace(/\s+/g,'_')
+      .replace(/[^a-z0-9_]/g,'_')
+      .replace(/_+/g,'_')
+      .replace(/_$/,'')
+      .replace(/^(\d)/,'c$1'));
+    addLog(`Cols: ${cols.slice(0,5).join(', ')}${cols.length>5?' +'+(cols.length-5)+' más':''}`);
+
+    // Detectar columna de fecha
+    const dateColRaw = rawCols.find(c => c.trim().toLowerCase() === 'start_date')
+                    || rawCols.find(c => c.trim().toLowerCase().includes('start_date'));
+    const dateColSan = dateColRaw ? cols[rawCols.indexOf(dateColRaw)] : null;
+
+    const uniqueDates = [...new Set(rows.map(r => {
+      const v = r[dateColRaw];
+      if(!v) return null;
+      if(v instanceof Date){
+        return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`;
       }
-      return null;
-    };
-    const vfSheet    = findSheet(/^vf$/i, /^ns$/i, /viajes/i, /datos/i);
-    const flotaSheet = findSheet(/^flota$/i, /flota/i);
-    const inputsSheet= findSheet(/^inputs?$/i, /^entrada/i, /coordinadores?/i);
+      return String(v).slice(0,10);
+    }).filter(Boolean))];
 
-    // ── Mostrar estatus de hojas ──
-    const sd=document.getElementById('sheetsDetected');
-    sd.classList.add('show');
-    sd.innerHTML=`
-      <div class="sheet-item"><span>VF (datos):</span><span class="${vfSheet?'ok':'miss'}">${vfSheet||'NO ENCONTRADA'}</span></div>
-      <div class="sheet-item"><span>Flota (carros activos):</span><span class="${flotaSheet?'ok':'opt'}">${flotaSheet||'opcional · sin filtro'}</span></div>
-      <div class="sheet-item"><span>Inputs (coordinadores):</span><span class="${inputsSheet?'ok':'opt'}">${inputsSheet||'opcional · sin coord/jefe'}</span></div>
-    `;
+    setProgress(22,'Verificando tabla...');
+    const colDefs=cols.map(c=>`"${c}" TEXT`).join(', ');
+    await neonQuery(`CREATE TABLE IF NOT EXISTS ${tableName} (${colDefs})`);
 
-    if(!vfSheet){
-      addLog(`No se encontró hoja de viajes (VF/NS).`,'err');
-      document.getElementById('btnText').textContent='Falta hoja VF';
-      return;
+    if(uniqueDates.length && dateColSan){
+      setProgress(26,'Borrando fechas existentes...');
+      const placeholders=uniqueDates.map((_,i)=>`$${i+1}`).join(',');
+      await neonQuery(`DELETE FROM ${tableName} WHERE "${dateColSan}" IN (${placeholders})`, uniqueDates);
+      addLog(`Fechas borradas: ${uniqueDates.join(', ')}`,'warn');
+    } else {
+      addLog('No se detectó columna start_date — se inserta sin borrar','warn');
     }
 
+    setProgress(30,'Insertando datos...');
+    const total=rows.length;
+    let inserted=0;
+
+    for(let i=0;i<total;i+=BATCH_SIZE){
+      const batch=rows.slice(i,i+BATCH_SIZE);
+      const colNames=cols.map(c=>`"${c}"`).join(',');
+      const placeholders=batch.map((_,ri)=>{
+        const offset=ri*cols.length;
+        return '('+cols.map((_,ci)=>`$${offset+ci+1}`).join(',')+')'
+      }).join(',');
+      const values=batch.flatMap(row=>rawCols.map(rc=>{
+        const v=row[rc];
+        if(v===null||v===undefined||v==='') return null;
+        if(v instanceof Date){
+          return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`;
+        }
+        return String(v);
+      }));
+      await neonQuery(`INSERT INTO ${tableName} (${colNames}) VALUES ${placeholders}`,values);
+      inserted+=batch.length;
+      const pct=30+Math.round((inserted/total)*68);
+      setProgress(pct,`Insertando: ${inserted.toLocaleString()} / ${total.toLocaleString()} filas...`);
+    }
+
+    setProgress(100,'¡Listo!');
+    addLog(`✅ ${inserted.toLocaleString()} filas insertadas`,'ok');
+    showSuccess('¡Datos actualizados!', `${inserted.toLocaleString()} filas en "${tableName}" · ${new Date().toLocaleString('es-MX')}`);
+    document.getElementById('btnIcon').textContent='✅';
+    document.getElementById('btnText').textContent='Subir otro archivo';
+    btn.disabled=false; catBtn.disabled=false;
+
+  }catch(e){
+    addLog(`ERROR: ${e.message}`,'err');
+    setProgress(0,'Error — revisa el log');
+    document.getElementById('btnIcon').textContent='⬆️';
+    document.getElementById('btnText').textContent='Reintentar';
+    btn.disabled=false; catBtn.disabled=false;
+    console.error(e);
+  }
+});
+
+// ── Generar Catálogo de Unidades (descarga) ──────────────────────
+document.getElementById('catalogBtn').addEventListener('click', async ()=>{
+  if(!selectedFile) return;
+  const btn=document.getElementById('uploadBtn');
+  const catBtn=document.getElementById('catalogBtn');
+  btn.disabled=true; catBtn.disabled=true;
+  document.getElementById('catIcon').textContent='⏳';
+  document.getElementById('catText').textContent='Generando...';
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('successBanner').classList.remove('show');
+
+  try{
+    addLog(`Leyendo: ${selectedFile.name}`);
+    setProgress(5,'Leyendo Excel...');
+    const buffer=await selectedFile.arrayBuffer();
+    const wb=XLSX.read(new Uint8Array(buffer),{type:'array',cellDates:true,dateNF:'YYYY-MM-DD'});
+
+    // ── Detectar hojas ──
+    const vfSheet    = findSheet(wb, /^vf$/i, /^ns$/i, /viajes/i, /datos/i);
+    const flotaSheet = findSheet(wb, /^flota$/i, /flota/i);
+    const inputsSheet= findSheet(wb, /^inputs?$/i, /^entrada/i, /coordinadores?/i);
+
+    if(!vfSheet) throw new Error(`No se encontró hoja VF/NS. Hojas: ${wb.SheetNames.join(', ')}`);
+    addLog(`Hojas: VF="${vfSheet}"${flotaSheet?', Flota="'+flotaSheet+'"':''}${inputsSheet?', Inputs="'+inputsSheet+'"':''}`);
+
     // ── Cargar VF ──
-    DATA = XLSX.utils.sheet_to_json(wb.Sheets[vfSheet],{defval:'',raw:false});
-    if(!DATA.length){ addLog('La hoja VF está vacía.','err'); return; }
-    addLog(`VF: ${DATA.length.toLocaleString()} filas · ${Object.keys(DATA[0]).length} columnas`,'ok');
+    setProgress(15,'Leyendo viajes...');
+    const DATA = XLSX.utils.sheet_to_json(wb.Sheets[vfSheet],{defval:'',raw:false});
+    if(!DATA.length) throw new Error('La hoja de viajes está vacía.');
+    addLog(`Viajes: ${DATA.length.toLocaleString()} filas`,'ok');
 
     // ── Cargar Flota ──
-    FLOTA_MAP={};
+    const FLOTA_MAP={};
     if(flotaSheet){
-      const fr=XLSX.utils.sheet_to_json(wb.Sheets[flotaSheet],{defval:''});
-      fr.forEach(r=>{
+      XLSX.utils.sheet_to_json(wb.Sheets[flotaSheet],{defval:''}).forEach(r=>{
         const id=String(r['IDS']||r['ID']||r['id']||'').trim();
-        if(!id) return;
-        FLOTA_MAP[id]={
-          planta:(r['PLANTA']||r['Planta']||'').toString().trim(),
-          marca: (r['Marca'] ||'').toString().trim(),
-          modelo:(r['Modelo']||'').toString().trim(),
-          estatus:(r['Estatus']||'').toString().trim(),
+        if(id) FLOTA_MAP[id]={
+          planta:String(r['PLANTA']||r['Planta']||'').trim(),
+          estatus:String(r['Estatus']||'').trim(),
         };
       });
       addLog(`Flota: ${Object.keys(FLOTA_MAP).length} unidades activas`,'ok');
@@ -285,16 +372,14 @@ async function prepareData(){
       addLog('Sin hoja Flota — no se filtran carros activos.','warn');
     }
 
-    // ── Cargar Inputs (DOS tablas paralelas independientes) ──
-    // Tabla 1 (cols A-F): CLIENTE → Jefe → Gerente → ...
-    // Tabla 2 (cols H-I): CLIENTE COOR → COORDINADOR
-    // Las filas NO se corresponden: cada tabla se procesa por separado.
-    COORD_RAW=[]; JEFE_BY_CLIENTE={}; GERENTE_BY_CLIENTE={};
+    // ── Cargar Inputs (dos tablas paralelas independientes) ──
+    setProgress(25,'Leyendo coordinadores...');
+    const COORD_RAW=[], JEFE_BY_CLIENTE={}, GERENTE_BY_CLIENTE={};
     if(inputsSheet){
       const ir=XLSX.utils.sheet_to_json(wb.Sheets[inputsSheet],{defval:''});
       ir.forEach(r=>{
         const keys=Object.keys(r);
-        // ── Tabla 1: cliente → jefe / gerente ──
+        // Tabla 1: CLIENTE → Jefe / Gerente
         const cliKey=keys.find(k=>k.trim().toUpperCase()==='CLIENTE');
         const jeKey =keys.find(k=>k.trim().toUpperCase()==='JEFE');
         const gerKey=keys.find(k=>k.trim().toUpperCase()==='GERENTE');
@@ -305,7 +390,7 @@ async function prepareData(){
             if(gerKey){ const ge=String(r[gerKey]||'').trim(); if(ge) GERENTE_BY_CLIENTE[cli]=ge; }
           }
         }
-        // ── Tabla 2: cliente_coor → coordinador (independiente de la tabla 1) ──
+        // Tabla 2: CLIENTE COOR → COORDINADOR
         const ccKey=keys.find(k=>k.trim().toUpperCase().replace(/\s+/g,'').includes('CLIENTECOOR'));
         const coKey=keys.find(k=>k.trim().toUpperCase()==='COORDINADOR');
         if(ccKey&&coKey){
@@ -314,201 +399,95 @@ async function prepareData(){
           if(cc&&co) COORD_RAW.push({cc,co});
         }
       });
-      addLog(`Inputs: ${COORD_RAW.length} reglas de coord · ${Object.keys(JEFE_BY_CLIENTE).length} jefes · ${Object.keys(GERENTE_BY_CLIENTE).length} gerentes`,'ok');
+      addLog(`Inputs: ${COORD_RAW.length} reglas coord · ${Object.keys(JEFE_BY_CLIENTE).length} jefes · ${Object.keys(GERENTE_BY_CLIENTE).length} gerentes`,'ok');
     } else {
-      addLog('Sin hoja Inputs — coordinador, jefe y gerente quedarán vacíos.','warn');
+      addLog('Sin hoja Inputs — coordinador y jefe quedarán vacíos.','warn');
     }
 
-    // ── Aplicar buildCoordMap ──
-    buildCoordMap();
+    // ── buildCoordMap (idéntico al dashboard) ──
+    setProgress(40,'Asignando coordinadores...');
+    if(COORD_RAW.length){
+      const clientNames=new Set(DATA.map(r=>String(r['group']||'').trim()).filter(Boolean));
+      const assign={};
+      COORD_RAW.forEach(({cc,co})=>{
+        if(clientNames.has(cc)){
+          if(!assign[cc]) assign[cc]={__default:co};
+          else assign[cc].__default=co;
+        } else {
+          let found=null;
+          for(const cli of clientNames){
+            if(cc.length>cli.length&&cc.startsWith(cli+'-')){ found=cli; break; }
+          }
+          if(found){
+            if(!assign[found]) assign[found]={__default:null};
+            const prefix=cc.slice(found.length+1).toUpperCase();
+            assign[found][prefix]=co;
+          }
+        }
+      });
+      DATA.forEach(r=>{
+        const client=String(r['group']||'').trim();
+        const route =String(r['des']||'').trim().toUpperCase();
+        const entry =assign[client]; if(!entry) return;
+        let coord=entry.__default||'';
+        for(const [pfx,co] of Object.entries(entry)){
+          if(pfx==='__default') continue;
+          if(route.startsWith(pfx+'-')||route.startsWith(pfx+' ')||route===pfx){ coord=co; break; }
+        }
+        if(coord) r['Coordinador']=coord;
+      });
+      // Pase 2: fallback por carro
+      const carCoordCount={};
+      DATA.forEach(r=>{
+        const co=String(r['Coordinador']||'').trim();
+        const car=String(r['car']||'').trim();
+        if(!co||!car) return;
+        if(!carCoordCount[car]) carCoordCount[car]={};
+        carCoordCount[car][co]=(carCoordCount[car][co]||0)+countViajes(r['Cantidad de viajes']);
+      });
+      // Pase 3: fallback por cliente
+      const cliCoordCount={};
+      DATA.forEach(r=>{
+        const co=String(r['Coordinador']||'').trim();
+        const cli=String(r['group']||'').trim();
+        if(!co||!cli) return;
+        if(!cliCoordCount[cli]) cliCoordCount[cli]={};
+        cliCoordCount[cli][co]=(cliCoordCount[cli][co]||0)+countViajes(r['Cantidad de viajes']);
+      });
+      function topEntry(obj){
+        if(!obj) return '';
+        const e=Object.entries(obj).sort((a,b)=>b[1]-a[1])[0];
+        return e?e[0]:'';
+      }
+      DATA.forEach(r=>{
+        if(String(r['Coordinador']||'').trim()) return;
+        const car=String(r['car']||'').trim();
+        const cli=String(r['group']||'').trim();
+        const resolved = (car?topEntry(carCoordCount[car]):'') || (cli?topEntry(cliCoordCount[cli]):'');
+        if(resolved) r['Coordinador']=resolved;
+      });
+    }
 
-    // ── Asignar Jefe y Gerente por CLIENTE directo (group) ──
+    // ── Asignar Jefe y Gerente por CLIENTE directo ──
     if(Object.keys(JEFE_BY_CLIENTE).length){
-      let jefAsig=0, gerAsig=0;
       DATA.forEach(r=>{
         const cli=String(r['group']||'').trim();
         if(!cli) return;
-        if(JEFE_BY_CLIENTE[cli]){    r['Jefe']=JEFE_BY_CLIENTE[cli];       jefAsig++; }
-        if(GERENTE_BY_CLIENTE[cli]){ r['Gerente']=GERENTE_BY_CLIENTE[cli]; gerAsig++; }
+        if(JEFE_BY_CLIENTE[cli])    r['Jefe']=JEFE_BY_CLIENTE[cli];
+        if(GERENTE_BY_CLIENTE[cli]) r['Gerente']=GERENTE_BY_CLIENTE[cli];
       });
-      addLog(`Jefe asignado a ${jefAsig.toLocaleString()} filas · Gerente a ${gerAsig.toLocaleString()}`,'ok');
     }
 
-    // ── Poblar filtros (mes y cliente) ──
-    const meses=new Set();
-    const clientes=new Set();
-    DATA.forEach(r=>{
-      const m=normMonth(getFecha(r)); if(m) meses.add(m);
-      const cli=String(r['group']||'').trim(); if(cli) clientes.add(cli);
-    });
-    const mesSel=document.getElementById('filterMes');
-    const cliSel=document.getElementById('filterCliente');
-    mesSel.innerHTML='<option value="">— Todos los meses —</option>'+
-      [...meses].sort().reverse().map(m=>`<option value="${m}">${m}</option>`).join('');
-    cliSel.innerHTML='<option value="">— Todos —</option>'+
-      [...clientes].sort().map(c=>`<option value="${c}">${c}</option>`).join('');
+    // ── Filtrar filas con jefe inválido (igual que dashboard) ──
+    setProgress(60,'Agrupando por carro...');
+    const rows = Object.keys(JEFE_BY_CLIENTE).length
+      ? DATA.filter(r=>{
+          const jefe=String(r['Jefe']||'').trim();
+          return jefe && !jefe.startsWith('#');
+        })
+      : DATA;
 
-    document.getElementById('filterConfig').classList.add('show');
-
-    dataReady=true;
-    btn.disabled=false;
-    document.getElementById('btnIcon').textContent='📥';
-    document.getElementById('btnText').textContent='Generar catálogo de unidades';
-
-  }catch(e){
-    addLog(`ERROR leyendo: ${e.message}`,'err');
-    console.error(e);
-    document.getElementById('btnText').textContent='Error — revisa el log';
-  }
-}
-
-// ── buildCoordMap (idéntico al dashboard) ────────────────────────
-function buildCoordMap(){
-  if(!COORD_RAW.length||!DATA.length) return;
-  const clientNames=new Set(DATA.map(r=>String(r['group']||'').trim()).filter(Boolean));
-  const assign={};
-
-  COORD_RAW.forEach(({cc,co})=>{
-    if(clientNames.has(cc)){
-      if(!assign[cc]) assign[cc]={__default:co};
-      else assign[cc].__default=co;
-    } else {
-      let found=null;
-      for(const cli of clientNames){
-        if(cc.length>cli.length&&cc.startsWith(cli+'-')){ found=cli; break; }
-      }
-      if(found){
-        if(!assign[found]) assign[found]={__default:null};
-        const prefix=cc.slice(found.length+1).toUpperCase();
-        assign[found][prefix]=co;
-      }
-    }
-  });
-
-  // Pase 1: enriquecer por cliente + prefijo de ruta
-  DATA.forEach(r=>{
-    const client=String(r['group']||'').trim();
-    const route =String(r['des']||'').trim().toUpperCase();
-    const entry =assign[client]; if(!entry) return;
-    let coord=entry.__default||'';
-    for(const [pfx,co] of Object.entries(entry)){
-      if(pfx==='__default') continue;
-      if(route.startsWith(pfx+'-')||route.startsWith(pfx+' ')||route===pfx){ coord=co; break; }
-    }
-    if(coord) r['Coordinador']=coord;
-  });
-
-  // Pase 2: fallback por carro (coord más frecuente para ese carro)
-  const carCoordCount={};
-  DATA.forEach(r=>{
-    const co=String(r['Coordinador']||'').trim();
-    const car=String(r['car']||'').trim();
-    if(!co||!car) return;
-    if(!carCoordCount[car]) carCoordCount[car]={};
-    carCoordCount[car][co]=(carCoordCount[car][co]||0)+countViajes(r['Cantidad de viajes']);
-  });
-
-  // Pase 3: fallback por cliente (coord más frecuente para ese cliente)
-  const cliCoordCount={};
-  DATA.forEach(r=>{
-    const co=String(r['Coordinador']||'').trim();
-    const cli=String(r['group']||'').trim();
-    if(!co||!cli) return;
-    if(!cliCoordCount[cli]) cliCoordCount[cli]={};
-    cliCoordCount[cli][co]=(cliCoordCount[cli][co]||0)+countViajes(r['Cantidad de viajes']);
-  });
-
-  function topEntry(obj){
-    if(!obj) return '';
-    const e=Object.entries(obj).sort((a,b)=>b[1]-a[1])[0];
-    return e?e[0]:'';
-  }
-
-  let pase2=0;
-  DATA.forEach(r=>{
-    if(String(r['Coordinador']||'').trim()) return;
-    const car=String(r['car']||'').trim();
-    const cli=String(r['group']||'').trim();
-    const bycar = car?topEntry(carCoordCount[car]):'';
-    const bycli = cli?topEntry(cliCoordCount[cli]):'';
-    const resolved = bycar||bycli;
-    if(resolved){ r['Coordinador']=resolved; pase2++; }
-  });
-
-  const total=DATA.filter(r=>String(r['Coordinador']||'').trim()).length;
-  addLog(`Coordinador asignado a ${total.toLocaleString()}/${DATA.length.toLocaleString()} filas (${pase2.toLocaleString()} por fallback)`,'ok');
-}
-
-// ── Periodo activo (para nombre de archivo y toast) ──────────────
-function getActivePeriod(filters){
-  const MESES=['Enero','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  let label='', fileTag='';
-  if(filters.mes){
-    const [y,m]=filters.mes.split('-');
-    label=(MESES[parseInt(m,10)-1]||m)+' '+y;
-    fileTag=filters.mes;
-  } else if(filters.fi||filters.ff){
-    label=(filters.fi||'inicio')+' al '+(filters.ff||'hoy');
-    fileTag=(filters.fi||'')+'_'+(filters.ff||'');
-  } else {
-    const meses=new Set();
-    DATA.forEach(r=>{ const m=normMonth(getFecha(r)); if(m) meses.add(m); });
-    const arr=[...meses].sort();
-    if(arr.length){
-      const [y0,m0]=arr[0].split('-');
-      const [y1,m1]=arr[arr.length-1].split('-');
-      label=(MESES[parseInt(m0,10)-1]||m0)+' '+y0+(arr.length>1?' – '+(MESES[parseInt(m1,10)-1]||m1)+' '+y1:'');
-      fileTag=arr[0]+(arr.length>1?'_'+arr[arr.length-1]:'');
-    } else { label='Sin fecha'; fileTag='all'; }
-  }
-  if(filters.cliente){ label+=' · '+filters.cliente; fileTag+='_'+filters.cliente.replace(/[^a-zA-Z0-9]/g,''); }
-  return { label, fileTag };
-}
-
-// ── Generar catálogo (idéntico al exportCatalogo del dashboard) ──
-document.getElementById('generateBtn').addEventListener('click', ()=>{
-  if(!dataReady||!DATA.length){ addLog('No hay datos cargados.','err'); return; }
-
-  const btn=document.getElementById('generateBtn');
-  btn.disabled=true;
-  document.getElementById('btnIcon').textContent='⏳';
-  document.getElementById('btnText').textContent='Generando...';
-  document.getElementById('progressWrap').classList.add('show');
-  document.getElementById('successBanner').classList.remove('show');
-
-  try{
-    const filters={
-      mes: document.getElementById('filterMes').value,
-      fi:  document.getElementById('filterFi').value,
-      ff:  document.getElementById('filterFf').value,
-      cliente: document.getElementById('filterCliente').value,
-    };
-
-    setProgress(15,'Aplicando filtros...');
-
-    // Filtros + exclusión de jefe inválido (igual al dashboard)
-    const rows=DATA.filter(r=>{
-      if(filters.mes){ if(normMonth(getFecha(r))!==filters.mes) return false; }
-      else {
-        const d=getFecha(r);
-        if(filters.fi && d < filters.fi) return false;
-        if(filters.ff && d > filters.ff) return false;
-      }
-      if(filters.cliente && String(r['group']||'').trim()!==filters.cliente) return false;
-      // Excluir filas sin jefe válido SOLO si tenemos mapeo de jefes
-      if(Object.keys(JEFE_BY_CLIENTE).length){
-        const jefe=String(r['Jefe']||'').trim();
-        if(!jefe || jefe==='#N/A' || jefe==='#REF!' || jefe.startsWith('#')) return false;
-      }
-      return true;
-    });
-
-    addLog(`Filas tras filtros: ${rows.length.toLocaleString()}`);
-    if(!rows.length){ addLog('Sin datos para los filtros seleccionados.','err'); resetBtn(); return; }
-
-    setProgress(40,'Agrupando por carro y coordinador...');
-
-    // Por cada carro, contar viajes por coordinador y quedarse con el mayoritario
+    // ── Agrupar por carro → coordinador ──
     const bycar={};
     rows.forEach(r=>{
       const carro=String(r['car']||'').trim(); if(!carro) return;
@@ -528,8 +507,7 @@ document.getElementById('generateBtn').addEventListener('click', ()=>{
 
     function top(obj){ return Object.entries(obj).sort((a,b)=>b[1]-a[1])[0]?.[0]||''; }
 
-    setProgress(65,'Eligiendo mayoritarios por carro...');
-
+    setProgress(80,'Construyendo catálogo...');
     const catalog=Object.entries(bycar).map(([carro,data])=>{
       const coord=top(Object.fromEntries(
         Object.entries(data.coords).map(([c,d])=>[c,d.viajes])
@@ -542,27 +520,22 @@ document.getElementById('generateBtn').addEventListener('click', ()=>{
         jefe:     top(d.jefes),
         operador: top(d.operadores),
         workerId: top(d.workerIds),
-        viajes:   data.coords[coord]?.viajes||0,
       };
-    }).sort((a,b)=>a.coord.localeCompare(b.coord)||a.carro.localeCompare(b.carro));
+    });
 
-    setProgress(80,'Cruzando con Flota...');
-
-    // Filtrar solo carros activos en Flota (si hay)
+    // ── Filtrar por Flota activa ──
     const flotaKeys=Object.keys(FLOTA_MAP);
     const catalogFinal=flotaKeys.length
       ? catalog.filter(r=>FLOTA_MAP[r.carro])
       : catalog;
     if(flotaKeys.length){
-      const cortados=catalog.length-catalogFinal.length;
-      addLog(`Flota: ${catalogFinal.length} activos · ${cortados} fuera de catálogo`,'ok');
+      addLog(`Flota: ${catalogFinal.length} activos · ${catalog.length-catalogFinal.length} fuera de catálogo`,'ok');
     }
 
-    if(!catalogFinal.length){ addLog('Catálogo vacío después de cruzar con Flota.','err'); resetBtn(); return; }
+    if(!catalogFinal.length) throw new Error('Catálogo vacío después de cruzar con Flota.');
 
+    // ── Generar Excel ──
     setProgress(92,'Generando Excel...');
-
-    // ── FIX: ahora SÍ se ordena por PLANTA → RUTA antes de escribir ──
     const dataRows=catalogFinal.map(r=>[r.cliente,r.ruta,r.jefe,r.coord,r.carro,r.workerId,r.operador]);
     dataRows.sort((a,b)=>String(a[0]).localeCompare(String(b[0]))||String(a[1]).localeCompare(String(b[1])));
 
@@ -570,39 +543,29 @@ document.getElementById('generateBtn').addEventListener('click', ()=>{
     const wsData=[header,...dataRows];
     const ws=XLSX.utils.aoa_to_sheet(wsData);
     ws['!cols']=[{wch:26},{wch:38},{wch:24},{wch:26},{wch:10},{wch:14},{wch:34}];
-    // Header en negrita (XLSX nativo)
-    const range=XLSX.utils.decode_range(ws['!ref']);
-    for(let c=range.s.c;c<=range.e.c;c++){
-      const addr=XLSX.utils.encode_cell({r:0,c});
-      if(ws[addr]){ ws[addr].s={font:{bold:true}}; }
-    }
 
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'Catálogo Unidades');
+    const wb2=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb2,ws,'Catálogo Unidades');
 
-    const {label:pLabel,fileTag:pTag}=getActivePeriod(filters);
-    const fileName=`Catalogo_Unidades_${pTag}.xlsx`;
-    XLSX.writeFile(wb,fileName);
+    const today=new Date();
+    const tag=`${today.getFullYear()}${pad(today.getMonth()+1)}${pad(today.getDate())}`;
+    const fileName=`Catalogo_Unidades_${tag}.xlsx`;
+    XLSX.writeFile(wb2,fileName);
 
-    setProgress(100,'¡Listo!');
-    addLog(`✅ ${catalogFinal.length} carros exportados → ${fileName}`,'ok');
-    document.getElementById('successBanner').classList.add('show');
-    document.getElementById('successSub').textContent=`${catalogFinal.length} carros · ${pLabel} · ${new Date().toLocaleString('es-MX')}`;
-    document.getElementById('btnIcon').textContent='✅';
-    document.getElementById('btnText').textContent='Generar otro catálogo';
-    btn.disabled=false;
+    setProgress(100,'¡Descargado!');
+    addLog(`✅ ${catalogFinal.length} carros → ${fileName}`,'ok');
+    showSuccess('¡Catálogo descargado!', `${catalogFinal.length} carros · ${new Date().toLocaleString('es-MX')}`);
+    document.getElementById('catIcon').textContent='✅';
+    document.getElementById('catText').textContent='Descargado';
+    btn.disabled=false; catBtn.disabled=false;
 
   }catch(e){
     addLog(`ERROR: ${e.message}`,'err');
-    console.error(e);
     setProgress(0,'Error — revisa el log');
-    resetBtn();
-  }
-
-  function resetBtn(){
-    btn.disabled=false;
-    document.getElementById('btnIcon').textContent='📥';
-    document.getElementById('btnText').textContent='Reintentar';
+    document.getElementById('catIcon').textContent='📥';
+    document.getElementById('catText').textContent='Reintentar';
+    btn.disabled=false; catBtn.disabled=false;
+    console.error(e);
   }
 });
 </script>
