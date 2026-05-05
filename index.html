@@ -102,16 +102,18 @@
     </div>
   </div>
 
-  <div class="btn-row">
-    <button class="btn btn-primary" id="uploadBtn" disabled>
-      <span id="btnIcon">⬆️</span>
-      <span id="btnText">Subir a Neon</span>
-    </button>
-    <button class="btn btn-secondary" id="catalogBtn" disabled>
-      <span id="catIcon">📥</span>
-      <span id="catText">Catálogo Unidades</span>
-    </button>
+  <div class="config" style="margin-top:.5rem;">
+    <label>Acción a realizar</label>
+    <select id="actionSelect">
+      <option value="upload">⬆️ Subir NS a Neon</option>
+      <option value="catalog">📥 Descargar Catálogo de Unidades</option>
+    </select>
   </div>
+
+  <button class="btn btn-primary" id="runBtn" style="width:100%;margin-top:1.5rem;" disabled>
+    <span id="btnIcon">▶️</span>
+    <span id="btnText">Selecciona un archivo primero</span>
+  </button>
 
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
@@ -208,26 +210,36 @@ function handleFile(file){
   document.getElementById('fileInfo').classList.add('show');
   document.getElementById('fileName').textContent=file.name;
   document.getElementById('fileMeta').textContent=`${(file.size/1024/1024).toFixed(2)} MB · ${new Date(file.lastModified).toLocaleDateString('es-MX')}`;
-  document.getElementById('uploadBtn').disabled=false;
-  document.getElementById('catalogBtn').disabled=false;
-  document.getElementById('btnText').textContent='Subir a Neon';
-  document.getElementById('catText').textContent='Catálogo Unidades';
-  document.getElementById('btnIcon').textContent='⬆️';
-  document.getElementById('catIcon').textContent='📥';
+  document.getElementById('runBtn').disabled=false;
+  document.getElementById('btnIcon').textContent='▶️';
+  document.getElementById('btnText').textContent='Cargar';
   document.getElementById('successBanner').classList.remove('show');
   document.getElementById('logBox').innerHTML='';
   document.getElementById('logBox').classList.remove('show');
   document.getElementById('progressWrap').classList.remove('show');
 }
 
-// ── Subir a Neon (lógica original intacta) ───────────────────────
-document.getElementById('uploadBtn').addEventListener('click', async ()=>{
+// Cuando cambia la acción, refrescamos el icono y mantenemos el label "Cargar"
+document.getElementById('actionSelect').addEventListener('change', ()=>{
   if(!selectedFile) return;
+  document.getElementById('btnIcon').textContent='▶️';
+  document.getElementById('btnText').textContent='Cargar';
+});
+
+// ── Botón único "Cargar" — despacha según la opción del combo ────
+document.getElementById('runBtn').addEventListener('click', async ()=>{
+  if(!selectedFile) return;
+  const action=document.getElementById('actionSelect').value;
+  if(action==='upload')      await runUpload();
+  else if(action==='catalog') await runCatalog();
+});
+
+// ── Subir a Neon (lógica original intacta) ───────────────────────
+async function runUpload(){
   const sheetName=document.getElementById('sheetName').value.trim()||'NS';
   const tableName=document.getElementById('tableName').value||'ns_data';
-  const btn=document.getElementById('uploadBtn');
-  const catBtn=document.getElementById('catalogBtn');
-  btn.disabled=true; catBtn.disabled=true;
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true;
   document.getElementById('btnIcon').textContent='⏳';
   document.getElementById('btnText').textContent='Subiendo...';
   document.getElementById('progressWrap').classList.add('show');
@@ -313,27 +325,25 @@ document.getElementById('uploadBtn').addEventListener('click', async ()=>{
     addLog(`✅ ${inserted.toLocaleString()} filas insertadas`,'ok');
     showSuccess('¡Datos actualizados!', `${inserted.toLocaleString()} filas en "${tableName}" · ${new Date().toLocaleString('es-MX')}`);
     document.getElementById('btnIcon').textContent='✅';
-    document.getElementById('btnText').textContent='Subir otro archivo';
-    btn.disabled=false; catBtn.disabled=false;
+    document.getElementById('btnText').textContent='Cargar otra vez';
+    btn.disabled=false;
 
   }catch(e){
     addLog(`ERROR: ${e.message}`,'err');
     setProgress(0,'Error — revisa el log');
-    document.getElementById('btnIcon').textContent='⬆️';
+    document.getElementById('btnIcon').textContent='▶️';
     document.getElementById('btnText').textContent='Reintentar';
-    btn.disabled=false; catBtn.disabled=false;
+    btn.disabled=false;
     console.error(e);
   }
-});
+}
 
 // ── Generar Catálogo de Unidades (descarga) ──────────────────────
-document.getElementById('catalogBtn').addEventListener('click', async ()=>{
-  if(!selectedFile) return;
-  const btn=document.getElementById('uploadBtn');
-  const catBtn=document.getElementById('catalogBtn');
-  btn.disabled=true; catBtn.disabled=true;
-  document.getElementById('catIcon').textContent='⏳';
-  document.getElementById('catText').textContent='Generando...';
+async function runCatalog(){
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true;
+  document.getElementById('btnIcon').textContent='⏳';
+  document.getElementById('btnText').textContent='Generando...';
   document.getElementById('progressWrap').classList.add('show');
   document.getElementById('successBanner').classList.remove('show');
 
@@ -555,19 +565,19 @@ document.getElementById('catalogBtn').addEventListener('click', async ()=>{
     setProgress(100,'¡Descargado!');
     addLog(`✅ ${catalogFinal.length} carros → ${fileName}`,'ok');
     showSuccess('¡Catálogo descargado!', `${catalogFinal.length} carros · ${new Date().toLocaleString('es-MX')}`);
-    document.getElementById('catIcon').textContent='✅';
-    document.getElementById('catText').textContent='Descargado';
-    btn.disabled=false; catBtn.disabled=false;
+    document.getElementById('btnIcon').textContent='✅';
+    document.getElementById('btnText').textContent='Cargar otra vez';
+    btn.disabled=false;
 
   }catch(e){
     addLog(`ERROR: ${e.message}`,'err');
     setProgress(0,'Error — revisa el log');
-    document.getElementById('catIcon').textContent='📥';
-    document.getElementById('catText').textContent='Reintentar';
-    btn.disabled=false; catBtn.disabled=false;
+    document.getElementById('btnIcon').textContent='▶️';
+    document.getElementById('btnText').textContent='Reintentar';
+    btn.disabled=false;
     console.error(e);
   }
-});
+}
 </script>
 </body>
 </html>
