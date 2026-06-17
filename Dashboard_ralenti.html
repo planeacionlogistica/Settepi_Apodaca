@@ -12,20 +12,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
 <style>
-nav{background:#1f2937;padding:15px 30px;display:flex;gap:25px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);position:sticky;top:0;z-index:300;flex-wrap:wrap;}
-nav>a{color:#e5e7eb;text-decoration:none;font-weight:600;padding:8px 16px;border-radius:8px;transition:all .3s;white-space:nowrap;}
-nav>a:first-child{color:#84cc16;font-weight:800;font-size:18px;}
-nav>a:hover{background:#374151;}
-.dropdown{position:relative;display:inline-block;}
-.dropdown-toggle{color:#e5e7eb;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;background:transparent;border:none;font-size:14px;font-family:inherit;}
-.dropdown-toggle:hover{background:#374151;}
-.dropdown-arrow{font-size:12px;transition:transform .3s;}
-.dropdown.open .dropdown-arrow{transform:rotate(180deg);}
-.dropdown-menu{display:none;position:absolute;top:100%;left:0;background:#374151;min-width:220px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3);margin-top:8px;z-index:1000;overflow:hidden;}
-.dropdown.open .dropdown-menu{display:block;}
-.dropdown-menu a{display:block;padding:12px 20px;color:#e5e7eb;text-decoration:none;font-weight:600;transition:all .3s;}
-.dropdown-menu a:hover{background:#4b5563;padding-left:25px;}
-.dropdown-menu a.active{background:#84cc16;color:#1f2937;}
+nav{background:#1f2937;padding:0 28px;display:flex;align-items:center;height:48px;gap:14px;position:sticky;top:0;z-index:2000;box-shadow:0 2px 8px rgba(0,0,0,.3);flex-shrink:0;font-family:'Inter',sans-serif;}
+.nav-logo{color:#84cc16;font-weight:800;font-size:16px;text-decoration:none;}
+.nav-sep{color:#4b5563;font-size:14px;font-weight:300;}
+.nav-page{color:#e5e7eb;font-size:13px;font-weight:600;}
 :root{--navy:#1a2236;--navy2:#222d42;--green:#7ed321;--white:#fff;--bg:#f0f2f7;--border:#dde3f0;--text:#1a2236;--muted:#6b7a99;--red:#e53e3e;--amber:#d97706;--teal:#0891b2;}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{background:var(--bg);color:var(--text);font-family:"Inter",sans-serif;min-height:100vh;}
@@ -163,36 +153,9 @@ html,body{background:var(--bg);color:var(--text);font-family:"Inter",sans-serif;
 </head>
 <body>
 <nav>
-  <a href="index.html">TRAXIÓN</a>
-  <div class="dropdown" id="dropdownLogistica">
-    <button class="dropdown-toggle" onclick="toggleDropdown('dropdownLogistica')">
-      Logística <span class="dropdown-arrow">▼</span>
-    </button>
-    <div class="dropdown-menu">
-      <a href="Dashboard_NS.html">Nivel de Servicio</a>
-      <a href="Dashboard_Kilometros.html">Kilómetros</a>
-      <a href="Dashboard_Flota.html">Flota</a>
-      <a href="Cambio_Manos.html">Cambio de manos</a>
-      <a href="Auditar_Folios.html">Auditoría de folios</a>
-      <a href="Planeador_Territorio.html">Eficiencias internas</a>
-    </div>
-  </div>
-  <div class="dropdown" id="dropdownSeguridad">
-    <button class="dropdown-toggle" onclick="toggleDropdown('dropdownSeguridad')">
-      Seguridad Vial <span class="dropdown-arrow">▼</span>
-    </button>
-    <div class="dropdown-menu">
-      <a href="Radar_Riesgos.html">Radar de Riesgos</a>
-    </div>
-  </div>
-  <div class="dropdown" id="dropdownCombustible">
-    <button class="dropdown-toggle" onclick="toggleDropdown('dropdownCombustible')">
-      Combustible <span class="dropdown-arrow">▼</span>
-    </button>
-    <div class="dropdown-menu">
-      <a href="Dashboard_ralenti.html" class="active">Ralentí</a>
-    </div>
-  </div>
+  <a class="nav-logo" href="index.html">TRAXIÓN</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-page">Ralentí</span>
 </nav>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -1064,8 +1027,6 @@ function resetFilters(){
   cascadeSelects();draw();
 }
 function toggleSidebar(){const s=document.getElementById('mobileSidebar');s.classList.toggle('sb-collapsed');s.classList.toggle('sb-expanded');}
-function toggleDropdown(id){const d=document.getElementById(id);document.querySelectorAll('.dropdown').forEach(x=>{if(x.id!==id)x.classList.remove('open');});d.classList.toggle('open');}
-document.addEventListener('click',e=>{if(!e.target.closest('.dropdown'))document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('open'));});
 </script>
 </body>
 </html>
