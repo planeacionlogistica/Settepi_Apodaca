@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traxion | Acceso</title>
+<link rel="icon" type="image/svg+xml" href="favicon-traxion.svg">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:#f3f4f6}
+#login{position:fixed;inset:0;background:#1f2937;display:flex;align-items:center;justify-content:center;z-index:9999;}
+#login::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(31,41,55,.88),rgba(31,41,55,.88)),url("fondotraxion.jpeg");background-size:cover;background-position:center;}
+.login-card{position:relative;background:#fff;border-radius:14px;padding:40px 36px;width:360px;max-width:92vw;box-shadow:0 25px 50px -12px rgba(0,0,0,.5);}
+.login-card h1{color:#84cc16;font-size:28px;text-align:center;letter-spacing:4px;margin-bottom:6px;font-weight:900}
+.login-card .sub{text-align:center;color:#6b7280;font-size:13px;margin-bottom:26px;font-weight:500}
+.login-card label{display:block;font-size:12px;font-weight:700;color:#1f2937;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.login-card input{width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:15px;outline:none;transition:border-color .2s;font-family:inherit;}
+.login-card input:focus{border-color:#84cc16}
+.login-card button{width:100%;margin-top:18px;padding:13px;border:0;border-radius:8px;background:#84cc16;color:#1f2937;font-weight:800;font-size:14px;letter-spacing:1px;cursor:pointer;transition:background .2s;text-transform:uppercase;}
+.login-card button:hover{background:#65a30d}
+.login-card button:disabled{background:#9ca3af;cursor:wait}
+.login-err{margin-top:12px;color:#b91c1c;font-size:13px;text-align:center;font-weight:600;display:none}
+.login-err.show{display:block}
+#menu{display:none}
+#menu.show{display:flex;height:100vh}
+.sidebar{width:260px;background:#1f2937;color:#fff;padding:20px;overflow-y:auto;display:flex;flex-direction:column;}
+.sidebar h1{color:#84cc16;font-size:22px;margin-bottom:30px;text-align:center}
+.menu-categories{flex:1}
+.menu-category{margin-bottom:8px}
+.menu-category-header{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:transparent;border:0;padding:11px 14px;border-radius:8px;color:#e5e7eb;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background .2s;}
+.menu-category-header:hover{background:#374151}
+.menu-category-header .cat-left{display:flex;align-items:center;gap:10px}
+.menu-category-header .cat-icon{width:16px;height:16px;fill:none;stroke:#84cc16;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.menu-category-header .chevron{width:14px;height:14px;fill:none;stroke:#9ca3af;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s ease}
+.menu-category.open .menu-category-header .chevron{transform:rotate(180deg)}
+.menu-category.open .menu-category-header{background:#374151}
+.menu-category-body{max-height:0;overflow:hidden;transition:max-height .3s ease;padding:0 6px;}
+.menu-category.open .menu-category-body{max-height:600px;padding:6px 6px 4px}
+.menu-item{display:flex;align-items:center;gap:11px;padding:10px 14px;margin-bottom:4px;border-radius:8px;color:#e5e7eb;text-decoration:none;font-weight:600;transition:all .3s;font-size:13.5px;cursor:pointer;}
+.menu-item svg{flex-shrink:0;width:18px;height:18px;fill:none;stroke:#9ca3af;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s}
+.menu-item:hover{background:#374151;transform:translateX(4px)}
+.menu-item:hover svg{stroke:#84cc16}
+.logout-btn{background:transparent;border:1.5px solid #374151;color:#9ca3af;padding:10px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;margin-top:15px;}
+.logout-btn:hover{border-color:#b91c1c;color:#b91c1c}
+.logout-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.main{flex:1;background:#fff;position:relative;overflow:hidden}
+.main::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.75),rgba(255,255,255,.75)),url("fondotraxion.jpeg");background-size:cover;background-position:center;}
+.hero{position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px}
+.hero h2{font-size:56px;letter-spacing:6px;font-weight:900;color:#1f2937;margin-bottom:10px}
+.hero p{margin-top:10px;font-size:18px;color:#6b7280;font-weight:500}
+.hero .tagline{font-size:16px;color:#84cc16;font-weight:700;margin-top:20px;letter-spacing:2px}
+@media (max-width:1024px){#menu.show{flex-direction:column}.sidebar{width:100%;max-height:300px}}
+@media (max-width:640px){.hero h2{font-size:36px;letter-spacing:3px}.hero p{font-size:16px}}
+</style>
+</head>
+<body>
+<div id="login">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <h1>TRAXION</h1>
+    <div class="sub">Acceso restringido</div>
+    <label for="pwd">Contrasena</label>
+    <input type="password" id="pwd" autofocus required>
+    <button type="submit" id="btn">Entrar</button>
+    <div class="login-err" id="err">Contrasena incorrecta</div>
+  </form>
+</div>
+<div id="menu">
+  <aside class="sidebar">
+    <h1>TRAXION</h1>
+    <div class="menu-categories">
+      <div class="menu-category" data-cat="logistica">
+        <button type="button" class="menu-category-header">
+          <span class="cat-left">
+            <svg class="cat-icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
+            <span>Logistica</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="menu-category-body">
+          <a href="Dashboard_NS.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Nivel de Servicio
+          </a>
+          <a href="Dashboard_Kilometros.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v1.5"/><path d="M7.5 9.5l1 1"/><path d="M16.5 9.5l-1 1"/><path d="M7 14h1.5"/><path d="M15.5 14H17"/><path d="M12 14l2.5-3" stroke-width="2"/><circle cx="12" cy="14" r="1" fill="#9ca3af" stroke="none"/></svg>
+            Kilometros Recorridos
+          </a>
+          <a href="Dashboard_Flota.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><rect x="1" y="4" width="13" height="12" rx="1"/><path d="M14 8h4l3 4v4h-7V8z"/><circle cx="5" cy="18.5" r="2"/><circle cx="18" cy="18.5" r="2"/><path d="M14 18.5H7"/></svg>
+            Flota Vehicular
+          </a>
+          <a href="Cambio_Manos.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M8 21H3v-5"/><path d="M3 21l7-7"/></svg>
+            Cambio de manos
+          </a>
+          <a href="Auditar_Folios.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 14 11 16 15 12"/></svg>
+            Auditoria de folios
+          </a>
+          <a href="Planeador_Territorio.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Eficiencias internas
+          </a>
+           <a href="Rolador.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Rolador
+          </a>
+           <a href="Logistica_Mundial.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Logistica Mundial 2026
+          </a>
+        </div>
+      </div>
+      <div class="menu-category" data-cat="seguridad">
+        <button type="button" class="menu-category-header">
+          <span class="cat-left">
+            <svg class="cat-icon" viewBox="0 0 24 24"><path d="M12 2L3 6v6c0 5 3.5 9.5 9 11 5.5-1.5 9-6 9-11V6l-9-4z"/></svg>
+            <span>Seguridad Vial</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="menu-category-body">
+          <a href="Radar_Riesgos.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="#9ca3af" stroke="none"/><path d="M12 12L18 6"/></svg>
+            Radar de Riesgos
+          </a>
+          <a href="Dashboard_Descansos.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="#9ca3af" stroke="none"/><path d="M12 12L18 6"/></svg>
+            Descansos
+          </a>
+          <a href="Dashboard_DMAS.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="#9ca3af" stroke="none"/><path d="M12 12L18 6"/></svg>
+            uso DMAS
+          </a>
+        </div>
+      </div>
+      <div class="menu-category" data-cat="rendimiento">
+        <button type="button" class="menu-category-header">
+          <span class="cat-left">
+            <svg class="cat-icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 18 0"/><path d="M12 12l4-3"/><circle cx="12" cy="12" r="1.5" fill="#84cc16" stroke="none"/></svg>
+            <span>Combustible</span>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="menu-category-body">
+          <a href="Dashboard_ralenti.html" class="menu-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M6.34 6.34a8 8 0 1 0 11.32 0"/><path d="M12 2v4"/></svg>
+            Ralenti
+          </a>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="logout-btn" id="logoutBtn">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesion
+    </button>
+  </aside>
+  <main class="main">
+    <div class="hero">
+      <h2>TRAXION</h2>
+      <p>Logistica &middot; Operaciones &middot; Seguridad</p>
+      <p class="tagline">Movemos lo mas valioso, conectamos destinos</p>
+    </div>
+  </main>
+</div>
+<script id="trx-validator" type="text/plain">mmF01QsTmGJCuAdVtyOU5miutD2BnjYzxPkxPG5QThu/lF3dMBECPAE1/Sd1KOhWNiWV0RPF56aw+UOF95W6+mE=</script>
+<script>
+const VALIDATOR_EXPECTED = "trx-settepi-garcia-ok";
+(async function autoAuth(){
+  const pwd = sessionStorage.getItem('trx_auth');
+  if(!pwd) return;
+  try{
+    const blob = document.getElementById('trx-validator').textContent.trim();
+    const txt = await trxDecrypt(blob, pwd);
+    if(txt === VALIDATOR_EXPECTED){ showMenu(); }
+    else{ sessionStorage.removeItem('trx_auth'); }
+  }catch(e){ sessionStorage.removeItem('trx_auth'); }
+})();
+document.getElementById('loginForm').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  const pwd = document.getElementById('pwd').value;
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+  try{
+    const blob = document.getElementById('trx-validator').textContent.trim();
+    const txt = await trxDecrypt(blob, pwd);
+    if(txt !== VALIDATOR_EXPECTED) throw new Error('mismatch');
+    sessionStorage.setItem('trx_auth', pwd);
+    showMenu();
+  }catch(e){
+    err.classList.add('show');
+    document.getElementById('pwd').value = '';
+    document.getElementById('pwd').focus();
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+});
+document.getElementById('logoutBtn').addEventListener('click', function(){
+  sessionStorage.removeItem('trx_auth');
+  location.reload();
+});
+function showMenu(){
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('menu').classList.add('show');
+}
+document.querySelectorAll('.menu-category-header').forEach(function(h){
+  h.addEventListener('click', function(){
+    h.parentElement.classList.toggle('open');
+  });
+});
+async function trxDecrypt(b64, password){
+  const bin = Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
+  const salt = bin.slice(0,16);
+  const iv = bin.slice(16,28);
+  const ct = bin.slice(28);
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt, iterations:250000, hash:'SHA-256'},
+    km, {name:'AES-GCM', length:256}, false, ['decrypt']
+  );
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, ct);
+  return new TextDecoder().decode(pt);
+}
+</script>
+</body>
+</html>
